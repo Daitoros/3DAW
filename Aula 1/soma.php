@@ -10,7 +10,9 @@ elseif($op == "-")
     $result = $v1 - $v2;
 elseif($op == '*')
     $result = $v1 * $v2;
-elseif($op == '/')
+elseif($op == '/' && $v2!=0)
     $result = $v1 / $v2;
+
+echo "O resultado é: " . $result;
 ?>
 

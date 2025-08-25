@@ -8,20 +8,13 @@
         <form action="soma.php" method="GET" name="soma">
         A:<input type="text" name="a"> <br>
         B:<input type="text" name="b">
+        <select name="op">
+            <option value="+">+</option>
+            <option value="-">-</option>
+            <option value="*">*</option>
+            <option value="/">/</option>
+        </select>
         <input type="submit">
-        <?php echo "<h1>Resultado: $result</h1>";?>
         </form>
     </body>
 </html>
-
-
-
-
-<?php
-$v1 = $_GET["a"];
-$v2 = $_GET["b"];
-$op = $_GET["op"];
-$result = 0;
-
-if ()
-?>
