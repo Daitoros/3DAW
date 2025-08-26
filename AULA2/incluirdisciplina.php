@@ -67,7 +67,7 @@
         $msg = "Deu tudo certo!";
     } else {
         // Redireciona o usuário de volta para o formulário se a requisição não for POST
-        header("Location: seu_formulario.html");
+        header("Location: incluirdisciplina.html");
         exit();
     }
     ?>

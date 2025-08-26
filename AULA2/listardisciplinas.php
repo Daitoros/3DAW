@@ -8,17 +8,26 @@
             <tr><th>Nome</th><th>Sigla</th><th>Carga</th></tr>
             <?php
                 $arqDisc = fopen("disciplinas.txt", "r") or die("Erro ao abrir arquivo.");
+                
+                fgets($arqDisc);
+                
                 while(!feof($arqDisc)){
                     $linha = fgets($arqDisc);
-                    $colunaDados = explode(";", $linha);
+                    
+                    if (trim($linha) != "") {
+                        $colunaDados = explode(";", $linha);
 
-                    echo "<tr><td>" . $colunaDados[0] . "</td>" .
-                        "<td>" . $colunaDados[1] . "</td>" .
-                        "<td>" . $colunaDados[2] . "</td></tr>";
+                        echo "<tr><td>" . $colunaDados[0] . "</td>" .
+                             "<td>" . $colunaDados[1] . "</td>" .
+                             "<td>" . $colunaDados[2] . "</td>" .
+                             "<td><a href='editardisciplina.php?sigla=" . $colunaDados[1] . "'>Editar</a></td>" .
+                             "<td><a href='excluirdisciplina.php?sigla=" . $colunaDados[1] . "'>Excluir</a></td>" .
+                             "</tr>";
+                    }
                 }
+                
                 fclose($arqDisc);
             ?>
         </table>
     </body>
 </html>
-    
