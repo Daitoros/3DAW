@@ -7,25 +7,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')  {
 
     $padraoEmail = '/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/';
     $padraoNome = '/^[a-zA-ZÀ-ú\s\'-]+$/';
-    
+    $padraoMatricula = '/^\d+$/';
+
 
     if(!preg_match($padraoEmail, $email)) {
         $msg = "O endereço de email '$email' não é válido!";
     } else {
         if(!preg_match($padraoNome, $nome)){
-            $msg = "O Nome introduzido, '$nome' não é válido!";
+            $msg = "O Nome introduzido, '$nome', não é válido!";
         }else{
-            if (!file_exists("alunos.txt")) {
-            $arqDisc = fopen("alunos.txt","w") or die("erro ao criar arquivo");
-            $linha = "matricula;nome;email\n";
-            fwrite($arqDisc,$linha);
-            fclose($arqDisc);
-        }
-        $arqDisc = fopen("alunos.txt","a") or die("erro ao abrir arquivo");
-        $linha = $matricula . ";" . $nome . ";" . $email . "\n";
-        fwrite($arqDisc,$linha);
-        fclose($arqDisc);
-        $msg = "Deu tudo certo!!!";
+            if(!preg_match($padraoMatricula, $matricula)) {
+                $msg = "A Matrícula '$matricula' não é válida!";
+            }else{
+                if (!file_exists("alunos.txt")) {
+                    $arqDisc = fopen("alunos.txt","w") or die("erro ao criar arquivo");
+                    $linha = "matricula;nome;email\n";
+                    fwrite($arqDisc,$linha);
+                    fclose($arqDisc);
+                }
+                $arqDisc = fopen("alunos.txt","a") or die("erro ao abrir arquivo");
+                $linha = $matricula . ";" . $nome . ";" . $email . "\n";
+                fwrite($arqDisc,$linha);
+                fclose($arqDisc);
+                $msg = "Deu tudo certo!!!";
+            }
         }
     }
    
