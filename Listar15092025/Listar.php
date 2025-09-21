@@ -36,6 +36,6 @@
             echo "</tr>";
         }
     }
-    echo "<button><a href= "Incluir.php"> Incluir nova disciplina</a></button>";    
+    echo "<button><a href='Incluir.php'> Incluir nova disciplina</a></button>";    
 ?>
 
