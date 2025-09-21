@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <h1 style="centered">Lista Aluno</h1>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Listar alunos</title>
+        <link rel="stylesheet" href="style.css">
     </head>
     <body>
         <table>
@@ -19,6 +22,7 @@
                 </tr>
             </thead>
             <tbody>
+                <h1 style="centered">Lista Aluno</h1>
                 <?php
                     $arquivo = fopen("alunos.txt", "r") or die("Impossível criar arquivo!");
                     IF( $arquivo !== false ) {
@@ -36,9 +40,9 @@
                         }
                         fclose($arquivo);
                     }
-                    echo "<button><a href='Incluir.php'> Incluir novo aluno</a></button>";    
                 ?>
             </tbody>
         <table>
+        <button><a href='Incluir.php'> Incluir novo aluno</a></button>
     </body>
 </html>
