@@ -1,4 +1,4 @@
-DOCTYPE HTML
+<!DOCTYPE html>
 <html>
     <head>
         <h1 style="centered">Lista Aluno</h1>
@@ -32,6 +32,10 @@ DOCTYPE HTML
             echo "<td>$dados[0]</td>";
             echo "<td>$dados[1]</td>";
             echo "<td>$dados[2]</td>";
+            // echo "<td><a href="alterar.php">Alterar</a></td>";
             echo "</tr>";
         }
+    }
+    echo "<button><a href= "Incluir.php"> Incluir nova disciplina</a></button>"    
 ?>
+
