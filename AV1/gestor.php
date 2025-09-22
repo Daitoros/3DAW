@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Incluir aluno</title>
+        <title>Gerenciar perguntas</title>
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
@@ -24,6 +24,9 @@
                     <th>
                         <h2>Resposta 3</h2>
                     </th>
+                    <th>
+                        <h2>Resposta Correta</h2>
+                    </th>
                 </tr>
             </thead>
             <tbody>
@@ -31,10 +34,12 @@
             if (!file_exists("perguntas.txt")) 
             {
                 echo "<tr>";
+                echo "<td></td>";
                 echo "<td>Não há</td>";
                 echo "<td>Não há</td>";
                 echo "<td>Não há</td>";
                 echo "<td>Não há</td>";
+                echo "<td>Não há</td>";                
                 echo "</tr>";
             } else{
 
@@ -47,11 +52,13 @@
 
                     echo "<tr>";
                     echo "<td>" . $i+1 . "</td>";
+
                     echo "<td>" . $dados[0] . "</td>";
                     echo "<td>" . $dados[1] . "</td>";
                     echo "<td>" . $dados[2] ."</td>";
-                    // echo "<td><a href='alterar.php'>Alterar</a></td>";
-                    echo "</tr>";
+                    echo "<td>" . $dados[3] ."</td>";
+                    echo "<td>" . $dados[4] ."</td>";
+                    echo "</tr>";    
                     $i++;
                 }
                 fclose($arquivo);
@@ -59,7 +66,7 @@
             ?>
             </tbody>
         <table>
-        <button><a href='Incluir.php'> Incluir nova pergunta</a></button>
+        <button><a href='incluir.php'> Incluir nova pergunta</a></button>
         <button><a href='alterar.php'> Alterar pergunta</a></button>
     </body>
 </html>
