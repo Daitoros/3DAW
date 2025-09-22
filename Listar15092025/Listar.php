@@ -11,6 +11,8 @@
             <thead>
                 <tr>
                     <th>
+                    </th>
+                    <th>
                         <h2>Matricula</h2>
                     </th>
                     <th>
@@ -19,6 +21,8 @@
                     <th>
                         <h2>Email</h2>
                     </th>
+                    <!-- <th>
+                    </th> -->
                 </tr>
             </thead>
             <tbody>
@@ -28,15 +32,18 @@
                     IF( $arquivo !== false ) {
                         $linha = fgets($arquivo);
                         while(($linha = fgets($arquivo))!==false){
+                            $i=0;
                             // $linha = fgets( $arquivo );
                             $dados = explode(";", $linha);
 
                             echo "<tr>";
+                            echo "<td>" . $i+1 . "</td>";
                             echo "<td>" . $dados[0] . "</td>";
                             echo "<td>" . $dados[1] . "</td>";
                             echo "<td>" . $dados[2] ."</td>";
-                            // echo "<td><a href="alterar.php">Alterar</a></td>";
+                            // echo "<td><a href='alterar.php'>Alterar</a></td>";
                             echo "</tr>";
+                            $i++;
                         }
                         fclose($arquivo);
                     }
@@ -44,5 +51,6 @@
             </tbody>
         <table>
         <button><a href='Incluir.php'> Incluir novo aluno</a></button>
+        <button><a href='alterar.php'> Alterar aluno</a></button>
     </body>
 </html>
