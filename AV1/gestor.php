@@ -45,8 +45,8 @@
 
                 $arquivo = fopen("perguntas.txt", "r") or die("Impossível criar arquivo!");
                 $linha = fgets($arquivo);
+                $i=0;
                 while(($linha = fgets($arquivo))!==false){
-                    $i=0;
                     // $linha = fgets( $arquivo );
                     $dados = explode(";", $linha);
 
@@ -67,6 +67,7 @@
             </tbody>
         <table>
         <button><a href='incluir.php'> Incluir nova pergunta</a></button>
-        <button><a href='alterar.php'> Alterar pergunta</a></button>
+        <button><a href='alterar_selecionar.php'> Alterar pergunta</a></button>
+        <button><a href='excluir.php'> Excluir pergunta</a></button>
     </body>
 </html>

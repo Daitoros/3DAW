@@ -68,7 +68,5 @@
                 <input type="submit" value="Responder Pergunta">
             </form>
             <br>    
-        <button><a href='incluir.php'> Incluir nova pergunta</a></button>
-        <button><a href='alterar.php'> Alterar pergunta</a></button>
     </body>
 </html>
