@@ -1,3 +1,11 @@
+<?php
+session_start();
+
+if (!isset($_SESSION['funcao']) || $_SESSION['funcao'] != 'funcionario') {
+    header("Location: index.php"); // Redireciona para o login
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html>
     <head>

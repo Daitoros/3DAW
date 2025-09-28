@@ -1,3 +1,11 @@
+<?php
+session_start();
+
+if (!isset($_SESSION['funcao']) || $_SESSION['funcao'] != 'gestor') {
+    header("Location: index.php"); // Redireciona para o login
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html>
     <head>
@@ -69,5 +77,7 @@
         <button><a href='incluir.php'> Incluir nova pergunta</a></button>
         <button><a href='alterar_selecionar.php'> Alterar pergunta</a></button>
         <button><a href='excluir.php'> Excluir pergunta</a></button>
+        <br><br>
+        <button><a href='incluir_usuario.php'> Incluir novo Usuário</a></button> 
     </body>
 </html>
