@@ -10,10 +10,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST'){
     $funcao = "";
 
     if (!file_exists("usuarios.txt")){
+        // ERRO 1: O arquivo não existe
         $msg = "<p class='erro'>Erro: Arquivo de usuários não existe. Cadastre um usuário primeiro!</p>";
     } else {
+        // O arquivo existe, tenta fazer o login
         $arquivo = fopen("usuarios.txt", "r") or die("Erro ao abrir arquivo de usuários!");
-        fgets($arquivo); 
+        fgets($arquivo); // Descarta o cabeçalho
         
         while(($linha = fgets($arquivo)) !== false){
             $dados = explode(";", trim($linha)); 
@@ -28,21 +30,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST'){
             }
         }
         fclose($arquivo);
-    }
-    
-    if ($logado){
-        $_SESSION['funcao'] = $funcao; 
         
-        if ($funcao == 'gestor'){
-            header("Location: gestor.php");
-            exit;
-        } else if ($funcao == 'funcionario'){
-            header("Location: funcionario.php");
-            exit;
+        // *** ESTA É A CORREÇÃO LÓGICA ***
+        if ($logado){
+            // Login OK
+            $_SESSION['funcao'] = $funcao; 
+            
+            if ($funcao == 'gestor'){
+                header("Location: gestor.php");
+                exit;
+            } else if ($funcao == 'funcionario'){
+                header("Location: funcionario.php");
+                exit;
+            }
+        } else {
+            // ERRO 2: O arquivo existe, mas o login falhou
+            $msg = "<p class='erro'>Usuário ou senha inválidos.</p>";
         }
-    } else if($_SERVER['REQUEST_METHOD'] == 'POST'){
-        $msg = "<p class='erro'>Usuário ou senha inválidos.</p>";
     }
+    // O bloco "else if" que estava aqui foi removido, pois ele causava o bug da mensagem.
 }
 ?>
 <!DOCTYPE html>
@@ -65,5 +71,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST'){
         </form>
 
         <p><?php echo $msg; ?></p>
+        
+        <?php
+        // *** ESTA É A CORREÇÃO DO LINK ***
+        // Se o arquivo não existir, mostra o link para criar o primeiro usuário
+        if (!file_exists("usuarios.txt")) {
+            echo "<p>Sistema não instalado. <a href='incluir_usuario.php'>Criar primeiro usuário (Gestor)</a></p>";
+        }
+        ?>
     </body>
 </html>

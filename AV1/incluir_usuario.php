@@ -1,12 +1,19 @@
 <?php
 session_start();
+// Proteção: Apenas gestores podem incluir usuários
 
-if (!isset($_SESSION['funcao']) || $_SESSION['funcao'] != 'gestor') {
+$msg = "";
+
+// Verifica se é o primeiro usuário (se o arquivo não existe)
+$primeiro_cadastro = !file_exists("usuarios.txt");
+
+// Se NÃO for o primeiro cadastro E (não está logado OU não é gestor), bloqueia.
+if (!$primeiro_cadastro && (!isset($_SESSION['funcao']) || $_SESSION['funcao'] != 'gestor')) {
     header("Location: index.php");
     exit;
 }
 
-$msg = "";
+// ... (o restante do arquivo incluir_usuario.php continua igual)
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST')  
 {
