@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Jogo Corporativo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Home Jogo Corporativo - Login</h1>
+    
+    <form id="loginForm">
+        Usuário: <input type="text" id="usuario" required>
+        <br><br>
+        Senha: <input type="password" id="senha" required>
+        <br><br>
+        <input type="submit" value="Entrar">
+    </form>
+
+    <p id="msg"></p>
+    <div id="linkCadastro"></div>
+
+    <script src="db.js"></script>
+    <script>
+        // Limpa qualquer sessão anterior ao carregar a página de login
+        sessionStorage.removeItem('funcao');
+
+        const loginForm = document.getElementById('loginForm');
+        const msg = document.getElementById('msg');
+        const linkCadastro = document.getElementById('linkCadastro');
+
+        // Lógica de "Primeiro Cadastro"
+        if (getUsuarios().length === 0) {
+            msg.textContent = "Sistema não instalado.";
+            linkCadastro.innerHTML = "<p><a href='incluir_usuario.html'>Criar primeiro usuário (Gestor)</a></p>";
+        }
+
+        // Lógica de Login
+        loginForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // Impede o envio do formulário
+
+            const usuarioInput = document.getElementById('usuario').value;
+            const senhaInput = document.getElementById('senha').value;
+            
+            const usuarios = getUsuarios();
+            
+            // Procura o usuário no "banco de dados"
+            const usuarioEncontrado = usuarios.find(user => user.usuario === usuarioInput && user.senha === senhaInput);
+
+            if (usuarioEncontrado) {
+                // Logado com sucesso!
+                // Salva a função na sessionStorage (limpa ao fechar o navegador)
+                sessionStorage.setItem('funcao', usuarioEncontrado.funcao);
+                
+                // Redireciona com base na função
+                if (usuarioEncontrado.funcao === 'gestor') {
+                    window.location.href = 'gestor.html';
+                } else {
+                    window.location.href = 'funcionario.html';
+                }
+            } else {
+                // Erro no login
+                msg.textContent = "Usuário ou senha inválidos.";
+                msg.className = 'erro';
+            }
+        });
+    </script>
+</body>
+</html>

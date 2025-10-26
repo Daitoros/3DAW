@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alterar Usuário</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Alterar Usuário</h1>
+    
+    <form id="formAlteracao">
+        Usuário: <input type="text" id="usuario" required>
+        <br><br>
+        Senha: <input type="password" id="senha" required>
+        <br><br>
+        Função: 
+        <select id="funcao" required>
+            <option value="funcionario">Funcionário</option>
+            <option value="gestor">Gestor</option>
+        </select>
+        <br><br>
+        <input type="submit" value="Salvar Alterações">
+    </form>
+
+    <p id="msg"></p>
+    <a href='listar_usuarios.html'>Voltar para Lista de Usuários</a>
+
+    <script src="db.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        protegerPagina('gestor');
+
+        const form = document.getElementById('formAlteracao');
+        const msg = document.getElementById('msg');
+        
+        // Pega o ID do usuário da URL (ex: alterar_usuario.html?id=1)
+        const urlParams = new URLSearchParams(window.location.search);
+        const usuarioId = urlParams.get('id');
+
+        // Carrega os dados do usuário no formulário
+        window.onload = function() {
+            if (usuarioId === null) {
+                // Se não tiver ID, volta para a lista
+                window.location.href = 'listar_usuarios.html';
+                return;
+            }
+            
+            const user = getUsuarioById(usuarioId);
+            
+            if (!user) {
+                // Se o ID for inválido, volta para a lista
+                window.location.href = 'listar_usuarios.html';
+                return;
+            }
+            
+            // Preenche o formulário com os dados
+            document.getElementById('usuario').value = user.usuario;
+            document.getElementById('senha').value = user.senha;
+            document.getElementById('funcao').value = user.funcao;
+        };
+
+        // Salva as alterações
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const usuarioAtualizado = {
+                usuario: document.getElementById('usuario').value,
+                senha: document.getElementById('senha').value,
+                funcao: document.getElementById('funcao').value
+            };
+            
+            updateUsuario(usuarioId, usuarioAtualizado);
+
+            msg.textContent = "Usuário alterado com sucesso!";
+            msg.className = 'sucesso';
+        });
+    </script>
+</body>
+</html>

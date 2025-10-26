@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar perguntas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Gerenciamento de Perguntas</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Pergunta</th>
+                <th>Resposta 1</th>
+                <th>Resposta 2</th>
+                <th>Resposta 3</th>
+                <th>Resposta Correta</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="tabelaPerguntas">
+            </tbody>
+    </table>
+    <br>
+    <button><a href='incluir_pergunta.html'> Incluir nova pergunta</a></button>
+    <button><a href='listar_usuarios.html'> Gerenciar Usuários</a></button>
+    <button onclick="logoff()">Sair / Logoff</button>
+
+    <script src="db.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        // Protege a página
+        protegerPagina('gestor');
+
+        const tabelaPerguntas = document.getElementById('tabelaPerguntas');
+
+        // Função para carregar as perguntas na tabela
+        function carregarTabela() {
+            tabelaPerguntas.innerHTML = ''; // Limpa a tabela
+            const perguntas = getPerguntas();
+
+            if (perguntas.length === 0) {
+                tabelaPerguntas.innerHTML = "<tr><td colspan='7'>Não há perguntas cadastradas.</td></tr>";
+                return;
+            }
+
+            perguntas.forEach((p, index) => {
+                const linha = `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${p.pergunta}</td>
+                        <td>${p.resp1 || 'N/A'}</td>
+                        <td>${p.resp2 || 'N/A'}</td>
+                        <td>${p.resp3 || 'N/A'}</td>
+                        <td>${p.respCerta}</td>
+                        <td>
+                            <a href="alterar_pergunta.html?id=${index}">Alterar</a> |
+                            <a href="#" onclick="excluir(${index})">Excluir</a>
+                        </td>
+                    </tr>
+                `;
+                tabelaPerguntas.innerHTML += linha;
+            });
+        }
+
+        // Função para excluir
+        function excluir(id) {
+            if (confirm('Tem certeza que deseja excluir esta pergunta?')) {
+                deletePergunta(id);
+                carregarTabela(); // Recarrega a tabela
+            }
+        }
+
+        // Carrega a tabela quando a página abre
+        window.onload = carregarTabela;
+    </script>
+</body>
+</html>

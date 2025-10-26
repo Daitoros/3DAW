@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alterar Pergunta</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Alterar Pergunta</h1>
+    <form id="formPergunta">
+        Pergunta: <input type="text" id="pergunta" required>
+        <br><br>
+        Resposta 1: <input type="text" id="resp1">
+        <br><br>
+        Resposta 2: <input type="text" id="resp2">
+        <br><br>
+        Resposta 3: <input type="text" id="resp3">
+        <br><br>
+        Resposta Certa: <input type="text" id="respCerta" required>
+        <br><br>
+        <input type="submit" value="Salvar Alterações">
+    </form>
+    <p id="msg"></p>
+    <a href='gestor.html'>Voltar</a>
+
+    <script src="db.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        protegerPagina('gestor');
+
+        const form = document.getElementById('formPergunta');
+        const msg = document.getElementById('msg');
+        
+        // Pega o ID da pergunta da URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const perguntaId = urlParams.get('id');
+
+        // Carrega os dados da pergunta no formulário
+        window.onload = function() {
+            if (perguntaId === null) {
+                window.location.href = 'gestor.html';
+                return;
+            }
+            const p = getPerguntaById(perguntaId);
+            if (!p) {
+                window.location.href = 'gestor.html';
+                return;
+            }
+            
+            document.getElementById('pergunta').value = p.pergunta;
+            document.getElementById('resp1').value = p.resp1;
+            document.getElementById('resp2').value = p.resp2;
+            document.getElementById('resp3').value = p.resp3;
+            document.getElementById('respCerta').value = p.respCerta;
+        };
+
+        // Salva as alterações
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const perguntaAtualizada = {
+                pergunta: document.getElementById('pergunta').value,
+                resp1: document.getElementById('resp1').value,
+                resp2: document.getElementById('resp2').value,
+                resp3: document.getElementById('resp3').value,
+                respCerta: document.getElementById('respCerta').value
+            };
+            
+            updatePergunta(perguntaId, perguntaAtualizada);
+
+            msg.textContent = "Pergunta alterada com sucesso!";
+            msg.className = 'sucesso';
+        });
+    </script>
+</body>
+</html>

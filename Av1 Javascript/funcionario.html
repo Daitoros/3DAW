@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Perguntas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Perguntas Disponíveis</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Pergunta</th>
+                <th>Resposta 1</th>
+                <th>Resposta 2</th>
+                <th>Resposta 3</th>
+            </tr>
+        </thead>
+        <tbody id="tabelaPerguntas">
+            </tbody>
+    </table>
+    <br>
+    <form id="formResponder">
+        Digite o número da pergunta que deseja responder:
+        <input type="number" id="numPergunta" min="1" required>
+        <input type="submit" value="Responder Pergunta">
+    </form>
+    <br>    
+    <button onclick="logoff()">Sair / Logoff</button>
+
+    <script src="db.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        protegerPagina('funcionario');
+
+        const tabelaPerguntas = document.getElementById('tabelaPerguntas');
+        let totalPerguntas = 0;
+
+        // Carrega a tabela
+        window.onload = function() {
+            const perguntas = getPerguntas();
+            totalPerguntas = perguntas.length;
+            
+            if (totalPerguntas === 0) {
+                tabelaPerguntas.innerHTML = "<tr><td colspan='5'>Não há perguntas disponíveis.</td></tr>";
+                return;
+            }
+
+            perguntas.forEach((p, index) => {
+                const linha = `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${p.pergunta}</td>
+                        <td>${p.resp1 || 'N/A (Texto)'}</td>
+                        <td>${p.resp2 || 'N/A (Texto)'}</td>
+                        <td>${p.resp3 || 'N/A (Texto)'}</td>
+                    </tr>
+                `;
+                tabelaPerguntas.innerHTML += linha;
+            });
+            
+            // Ajusta o 'max' do input
+            document.getElementById('numPergunta').max = totalPerguntas;
+        };
+
+        // Redireciona para a página de resposta
+        document.getElementById('formResponder').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const num = document.getElementById('numPergunta').value;
+            
+            // O ID no array é (numero - 1)
+            const id = parseInt(num) - 1;
+
+            if (id >= 0 && id < totalPerguntas) {
+                // Salva o ID da pergunta que queremos responder
+                sessionStorage.setItem('perguntaId', id);
+                window.location.href = 'responder.html';
+            } else {
+                alert('Número da pergunta inválido.');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incluir Usuário</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Criar Novo Usuário</h1>
+    <form id="formInclusao">
+        Usuário: <input type="text" id="usuario" required>
+        <br><br>
+        Senha: <input type="password" id="senha" required>
+        <br><br>
+        Função: 
+        <select id="funcao" required>
+            <option value="funcionario">Funcionário</option>
+            <option value="gestor">Gestor</option>
+        </select>
+        <br><br>
+        <input type="submit" value="Criar Novo Usuário">
+    </form>
+    <p id="msg"></p>
+    <br>
+    <a href="index.html">Voltar para Login</a>
+    <a href="listar_usuarios.html" id="linkLista">Voltar para Lista</a>
+
+    <script src="db.js"></script>
+    <script src="auth.js"></script>
+    <script>
+        const linkLista = document.getElementById('linkLista');
+        const formInclusao = document.getElementById('formInclusao');
+        const msg = document.getElementById('msg');
+        
+        // Proteção da Página
+        const primeiroCadastro = ehPrimeiroCadastro();
+        if (!primeiroCadastro) {
+            // Se não for o primeiro cadastro, exige login de gestor
+            protegerPagina('gestor');
+            linkLista.style.display = 'inline'; // Mostra o link de voltar para a lista
+        } else {
+            linkLista.style.display = 'none'; // Esconde o link de voltar
+        }
+
+        formInclusao.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const usuario = document.getElementById('usuario').value;
+            const senha = document.getElementById('senha').value;
+            const funcao = document.getElementById('funcao').value;
+            
+            addUsuario({ usuario, senha, funcao });
+
+            msg.textContent = `Usuário '${usuario}' criado com sucesso!`;
+            msg.className = 'sucesso';
+            
+            // Limpa o formulário
+            formInclusao.reset();
+
+            // Se foi o primeiro cadastro, redireciona para o login
+            if (primeiroCadastro) {
+                setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+            }
+        });
+    </script>
+</body>
+</html>
