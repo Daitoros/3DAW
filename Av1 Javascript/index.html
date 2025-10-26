@@ -10,9 +10,9 @@
     <h1>Home Jogo Corporativo - Login</h1>
     
     <form id="loginForm">
-        Usuário: <input type="text" id="usuario" required>
+        Usuário: <input type="text" id="usuario" name="usuario" required>
         <br><br>
-        Senha: <input type="password" id="senha" required>
+        Senha: <input type="password" id="senha" name="senha" required>
         <br><br>
         <input type="submit" value="Entrar">
     </form>
@@ -20,7 +20,6 @@
     <p id="msg"></p>
     <div id="linkCadastro"></div>
 
-    <script src="db.js"></script>
     <script>
         // Limpa qualquer sessão anterior ao carregar a página de login
         sessionStorage.removeItem('funcao');
@@ -29,41 +28,52 @@
         const msg = document.getElementById('msg');
         const linkCadastro = document.getElementById('linkCadastro');
 
-        // Lógica de "Primeiro Cadastro"
-        if (getUsuarios().length === 0) {
-            msg.textContent = "Sistema não instalado.";
-            linkCadastro.innerHTML = "<p><a href='incluir_usuario.html'>Criar primeiro usuário (Gestor)</a></p>";
-        }
-
-        // Lógica de Login
+        // Lógica de Login via AJAX/Fetch
         loginForm.addEventListener('submit', function(event) {
             event.preventDefault(); // Impede o envio do formulário
 
-            const usuarioInput = document.getElementById('usuario').value;
-            const senhaInput = document.getElementById('senha').value;
+            const formData = new FormData(loginForm);
             
-            const usuarios = getUsuarios();
-            
-            // Procura o usuário no "banco de dados"
-            const usuarioEncontrado = usuarios.find(user => user.usuario === usuarioInput && user.senha === senhaInput);
-
-            if (usuarioEncontrado) {
-                // Logado com sucesso!
-                // Salva a função na sessionStorage (limpa ao fechar o navegador)
-                sessionStorage.setItem('funcao', usuarioEncontrado.funcao);
-                
-                // Redireciona com base na função
-                if (usuarioEncontrado.funcao === 'gestor') {
-                    window.location.href = 'gestor.html';
+            fetch('login.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.logado) {
+                    // Logado com sucesso!
+                    // Salva a função na sessionStorage para o auth.js usar
+                    sessionStorage.setItem('funcao', data.funcao);
+                    
+                    // Redireciona com base na função
+                    if (data.funcao === 'gestor') {
+                        window.location.href = 'gestor.html';
+                    } else {
+                        window.location.href = 'funcionario.html';
+                    }
                 } else {
-                    window.location.href = 'funcionario.html';
+                    // Erro no login
+                    msg.textContent = data.mensagem;
+                    msg.className = 'erro';
                 }
-            } else {
-                // Erro no login
-                msg.textContent = "Usuário ou senha inválidos.";
+            })
+            .catch(error => {
+                msg.textContent = "Erro de conexão com o servidor.";
                 msg.className = 'erro';
-            }
+            });
         });
+
+        // Verificação de "Primeiro Cadastro"
+        // Vamos usar um arquivo PHP para verificar se 'usuarios.txt' existe
+        fetch('check_install.php')
+            .then(response => response.json())
+            .then(data => {
+                if (!data.instalado) {
+                     msg.textContent = "Sistema não instalado.";
+                     linkCadastro.innerHTML = "<p><a href='incluir_usuario.html'>Criar primeiro usuário (Gestor)</a></p>";
+                }
+            });
+
     </script>
 </body>
 </html>

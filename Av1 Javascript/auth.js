@@ -1,9 +1,15 @@
+/* * auth.js (Versão AJAX)
+ * Gerencia a autenticação do lado do cliente (client-side).
+ * Verifica o sessionStorage, que é preenchido pelo login.
+ */
+
 // Função para verificar se o usuário tem a permissão correta
 function protegerPagina(funcaoExigida) {
+    // Pega a 'funcao' que foi salva no login
     const funcaoLogada = sessionStorage.getItem('funcao');
 
     if (funcaoLogada !== funcaoExigida) {
-        // Se não tiver a permissão, manda de volta para o login
+        // Se não tiver a permissão (ou não estiver logado), manda de volta para o login
         window.location.href = 'index.html';
     }
 }
@@ -14,8 +20,3 @@ function logoff() {
     window.location.href = 'index.html';
 }
 
-// Função auxiliar para verificar se é o primeiro usuário
-function ehPrimeiroCadastro() {
-    const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
-    return usuarios.length === 0;
-}
