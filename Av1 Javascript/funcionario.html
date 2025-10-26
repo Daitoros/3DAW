@@ -27,58 +27,73 @@
         <input type="number" id="numPergunta" min="1" required>
         <input type="submit" value="Responder Pergunta">
     </form>
+    <p id="msg"></p>
     <br>    
     <button onclick="logoff()">Sair / Logoff</button>
 
-    <script src="db.js"></script>
     <script src="auth.js"></script>
     <script>
         protegerPagina('funcionario');
 
         const tabelaPerguntas = document.getElementById('tabelaPerguntas');
+        const formResponder = document.getElementById('formResponder');
+        const numPerguntaInput = document.getElementById('numPergunta');
+        const msg = document.getElementById('msg');
         let totalPerguntas = 0;
 
-        // Carrega a tabela
+        // Carrega a tabela via FETCH
         window.onload = function() {
-            const perguntas = getPerguntas();
-            totalPerguntas = perguntas.length;
-            
-            if (totalPerguntas === 0) {
-                tabelaPerguntas.innerHTML = "<tr><td colspan='5'>Não há perguntas disponíveis.</td></tr>";
-                return;
-            }
+            tabelaPerguntas.innerHTML = '<tr><td colspan="5">Carregando...</td></tr>';
 
-            perguntas.forEach((p, index) => {
-                const linha = `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td>${p.pergunta}</td>
-                        <td>${p.resp1 || 'N/A (Texto)'}</td>
-                        <td>${p.resp2 || 'N/A (Texto)'}</td>
-                        <td>${p.resp3 || 'N/A (Texto)'}</td>
-                    </tr>
-                `;
-                tabelaPerguntas.innerHTML += linha;
-            });
-            
-            // Ajusta o 'max' do input
-            document.getElementById('numPergunta').max = totalPerguntas;
+            fetch('listar_perguntas.php')
+                .then(response => response.json())
+                .then(perguntas => {
+                    tabelaPerguntas.innerHTML = ''; // Limpa a tabela
+                    totalPerguntas = perguntas.length;
+
+                    if (totalPerguntas === 0) {
+                        tabelaPerguntas.innerHTML = "<tr><td colspan='5'>Não há perguntas disponíveis.</td></tr>";
+                        formResponder.style.display = 'none'; // Esconde o form se não há perguntas
+                        return;
+                    }
+
+                    perguntas.forEach((p, index) => {
+                        // O ID da Linha (código) é o (index + 1)
+                        const id_linha = index + 1;
+                        
+                        const linha = `
+                            <tr>
+                                <td>${id_linha}</td>
+                                <td>${p.pergunta}</td>
+                                <td>${p.resp1 || 'N/A (Texto)'}</td>
+                                <td>${p.resp2 || 'N/A (Texto)'}</td>
+                                <td>${p.resp3 || 'N/A (Texto)'}</td>
+                            </tr>
+                        `;
+                        tabelaPerguntas.innerHTML += linha;
+                    });
+                    
+                    // Ajusta o 'max' do input
+                    numPerguntaInput.max = totalPerguntas;
+                })
+                .catch(error => {
+                     tabelaPerguntas.innerHTML = `<tr><td colspan="5">Erro ao carregar perguntas.</td></tr>`;
+                });
         };
 
-        // Redireciona para a página de resposta
-        document.getElementById('formResponder').addEventListener('submit', function(event) {
+        // Valida o número e redireciona para a página de resposta
+        formResponder.addEventListener('submit', function(event) {
             event.preventDefault();
-            const num = document.getElementById('numPergunta').value;
+            const num = parseInt(numPerguntaInput.value);
             
-            // O ID no array é (numero - 1)
-            const id = parseInt(num) - 1;
-
-            if (id >= 0 && id < totalPerguntas) {
-                // Salva o ID da pergunta que queremos responder
-                sessionStorage.setItem('perguntaId', id);
+            if (num > 0 && num <= totalPerguntas) {
+                // Salva o ID da pergunta que queremos responder no sessionStorage
+                // O sessionStorage é usado para passar o ID entre as páginas
+                sessionStorage.setItem('perguntaIdParaResponder', num);
                 window.location.href = 'responder.html';
             } else {
-                alert('Número da pergunta inválido.');
+                msg.textContent = 'Número da pergunta inválido.';
+                msg.className = 'erro';
             }
         });
     </script>

@@ -8,10 +8,9 @@
 </head>
 <body>
     <h1 id="tituloPergunta">Responder Pergunta</h1>
-    <h2 id="textoPergunta"></h2>
+    <h2 id="textoPergunta">Carregando...</h2>
     
-    <form id="formResposta">
-        <div id="opcoesResposta">
+    <form id="formResposta" style="display: none;"> <div id="opcoesResposta">
             </div>
         <br>
         <input type="submit" value="Enviar Resposta">
@@ -20,12 +19,13 @@
     <p id="msg"></p>
     <a href='funcionario.html'>Voltar</a>
 
-    <script src="db.js"></script>
     <script src="auth.js"></script>
     <script>
         protegerPagina('funcionario');
 
-        const perguntaId = sessionStorage.getItem('perguntaId');
+        // Pega o ID salvo pelo funcionario.html
+        const perguntaId = sessionStorage.getItem('perguntaIdParaResponder');
+        
         const tituloPergunta = document.getElementById('tituloPergunta');
         const textoPergunta = document.getElementById('textoPergunta');
         const opcoesResposta = document.getElementById('opcoesResposta');
@@ -33,46 +33,54 @@
         const msg = document.getElementById('msg');
         let respostaCerta = '';
 
-        // Carrega a pergunta
+        // Carrega a pergunta via FETCH
         window.onload = function() {
-            if (perguntaId === null) {
-                window.location.href = 'funcionario.html';
+            if (!perguntaId) {
+                textoPergunta.textContent = "Erro: Nenhuma pergunta selecionada.";
                 return;
             }
 
-            const p = getPerguntaById(perguntaId);
-            if (!p) {
-                window.location.href = 'funcionario.html';
-                return;
-            }
+            // Usa o endpoint buscar_pergunta.php
+            fetch('buscar_pergunta.php?id=' + perguntaId)
+                .then(response => response.json())
+                .then(p => {
+                    if (p.erro) {
+                        textoPergunta.textContent = p.erro;
+                        return;
+                    }
 
-            respostaCerta = p.respCerta; // Armazena a resposta certa
-            tituloPergunta.textContent = `Responder Pergunta #${parseInt(perguntaId) + 1}`;
-            textoPergunta.textContent = p.pergunta;
+                    respostaCerta = p.respCerta; // Armazena a resposta certa
+                    tituloPergunta.textContent = `Responder Pergunta #${perguntaId}`;
+                    textoPergunta.textContent = p.pergunta;
 
-            // Verifica se é múltipla escolha (se resp1 existe)
-            if (p.resp1) {
-                opcoesResposta.innerHTML = `
-                    <input type="radio" name="suaResp" value="${p.resp1}" required> 
-                    <label>Resposta 1: ${p.resp1}</label><br><br>
-                    <input type="radio" name="suaResp" value="${p.resp2}" required>
-                    <label>Resposta 2: ${p.resp2}</label><br><br>
-                    <input type="radio" name="suaResp" value="${p.resp3}" required>
-                    <label>Resposta 3: ${p.resp3}</label><br><br>
-                `;
-            } else {
-                // É resposta de texto
-                opcoesResposta.innerHTML = `
-                    Sua Resposta: <input type="text" name="suaResp" required>
-                `;
-            }
+                    // Verifica se é múltipla escolha (se resp1 existe)
+                    if (p.resp1) {
+                        opcoesResposta.innerHTML = `
+                            <input type="radio" name="suaResp" value="${p.resp1}" required> 
+                            <label>Resposta 1: ${p.resp1}</label><br><br>
+                            <input type="radio" name="suaResp" value="${p.resp2}" required>
+                            <label>Resposta 2: ${p.resp2}</label><br><br>
+                            <input type="radio" name="suaResp" value="${p.resp3}" required>
+                            <label>Resposta 3: ${p.resp3}</label><br><br>
+                        `;
+                    } else {
+                        // É resposta de texto
+                        opcoesResposta.innerHTML = `
+                            Sua Resposta: <input type="text" name="suaResp" required>
+                        `;
+                    }
+                    
+                    formResposta.style.display = 'block'; // Mostra o formulário
+                })
+                .catch(error => {
+                    textoPergunta.textContent = "Erro de conexão ao buscar pergunta.";
+                });
         };
 
-        // Verifica a resposta
+        // Verifica a resposta (esta lógica é client-side e não mudou)
         formResposta.addEventListener('submit', function(event) {
             event.preventDefault();
             
-            // Pega o valor (funciona para rádio ou texto)
             const suaResp = formResposta.elements["suaResp"].value;
 
             if (suaResp.trim() === respostaCerta.trim()) {
@@ -85,6 +93,8 @@
             
             // Desabilita o formulário após responder
             formResposta.style.display = 'none';
+            // Limpa o ID do sessionStorage
+            sessionStorage.removeItem('perguntaIdParaResponder');
         });
     </script>
 </body>

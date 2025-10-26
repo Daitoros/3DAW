@@ -9,44 +9,55 @@
 <body>
     <h1>Criar Nova Pergunta</h1>
     <form id="formPergunta">
-        Pergunta: <input type="text" id="pergunta" required>
+        Pergunta: <input type="text" id="pergunta" name="pergunta" required>
         <br><br>
         Atenção, caso resposta de texto, não preencher abaixo
         <br><br>
-        Resposta 1: <input type="text" id="resp1">
+        Resposta 1: <input type="text" id="resp1" name="resp1">
         <br><br>
-        Resposta 2: <input type="text" id="resp2">
+        Resposta 2: <input type="text" id="resp2" name="resp2">
         <br><br>
-        Resposta 3: <input type="text" id="resp3">
+        Resposta 3: <input type="text" id="resp3" name="resp3">
         <br><br>
-        Resposta Certa: <input type="text" id="respCerta" required>
+        Resposta Certa: <input type="text" id="respCerta" name="respCerta" required>
         <br><br>
         <input type="submit" value="Criar Nova Pergunta">
     </form>
     <p id="msg"></p>
     <a href='gestor.html'>Voltar</a>
 
-    <script src="db.js"></script>
     <script src="auth.js"></script>
     <script>
         protegerPagina('gestor');
 
         document.getElementById('formPergunta').addEventListener('submit', function(event) {
-            event.preventDefault();
+            event.preventDefault(); // Impede o envio tradicional
 
-            const pergunta = {
-                pergunta: document.getElementById('pergunta').value,
-                resp1: document.getElementById('resp1').value,
-                resp2: document.getElementById('resp2').value,
-                resp3: document.getElementById('resp3').value,
-                respCerta: document.getElementById('respCerta').value
-            };
-            
-            addPergunta(pergunta);
+            const form = event.target;
+            const formData = new FormData(form);
+            const msg = document.getElementById('msg');
+            msg.textContent = 'Salvando...';
 
-            document.getElementById('msg').textContent = "Pergunta criada com sucesso!";
-            document.getElementById('msg').className = 'sucesso';
-            document.getElementById('formPergunta').reset();
+            // Envia os dados do formulário para o PHP
+            fetch('incluir_pergunta.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.sucesso) {
+                    msg.textContent = data.sucesso;
+                    msg.className = 'sucesso';
+                    form.reset(); // Limpa o formulário
+                } else {
+                    msg.textContent = data.erro || 'Erro desconhecido.';
+                    msg.className = 'erro';
+                }
+            })
+            .catch(error => {
+                msg.textContent = 'Erro de conexão com o servidor.';
+                msg.className = 'erro';
+            });
         });
     </script>
 </body>
