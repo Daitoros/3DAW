@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Jogo Corporativo</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Home Jogo Corporativo - Login</h1>
+    
+    <form id="loginForm">
+        Usuário: <input type="text" id="usuario" name="usuario" required>
+        <br><br>
+        Senha: <input type="password" id="senha" name="senha" required>
+        <br><br>
+        <input type="submit" value="Entrar">
+    </form>
+
+    <p id="msg"></p>
+    <div id="linkCadastro"></div>
+
+    <script>
+        // Limpa qualquer sessão anterior ao carregar a página de login
+        sessionStorage.removeItem('funcao');
+
+        const loginForm = document.getElementById('loginForm');
+        const msg = document.getElementById('msg');
+        const linkCadastro = document.getElementById('linkCadastro');
+
+        // Lógica de Login via AJAX/Fetch
+        loginForm.addEventListener('submit', function(event) {
+            event.preventDefault(); // Impede o envio do formulário
+
+            const formData = new FormData(loginForm);
+            
+            fetch('login.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.logado) {
+                    // Logado com sucesso!
+                    // Salva a função na sessionStorage para o auth.js usar
+                    sessionStorage.setItem('funcao', data.funcao);
+                    
+                    // Redireciona com base na função
+                    if (data.funcao === 'gestor') {
+                        window.location.href = 'gestor.html';
+                    } else {
+                        window.location.href = 'funcionario.html';
+                    }
+                } else {
+                    // Erro no login
+                    msg.textContent = data.mensagem;
+                    msg.className = 'erro';
+                }
+            })
+            .catch(error => {
+                msg.textContent = "Erro de conexão com o servidor.";
+                msg.className = 'erro';
+            });
+        });
+
+        // Verificação de "Primeiro Cadastro"
+        // Vamos usar um arquivo PHP para verificar se 'usuarios.txt' existe
+        fetch('check_install.php')
+            .then(response => response.json())
+            .then(data => {
+                if (!data.instalado) {
+                     msg.textContent = "Sistema não instalado.";
+                     linkCadastro.innerHTML = "<p><a href='incluir_usuario.html'>Criar primeiro usuário (Gestor)</a></p>";
+                }
+            });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incluir Usuário</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Criar Novo Usuário</h1>
+    <form id="formInclusao">
+        Usuário: <input type="text" id="usuario" name="usuario" required>
+        <br><br>
+        Senha: <input type="password" id="senha" name="senha" required>
+        <br><br>
+        Função: 
+        <select id="funcao" name="funcao" required>
+            <option value="funcionario">Funcionário</option>
+            <option value="gestor">Gestor</option>
+        </select>
+        <br><br>
+        <input type="submit" value="Criar Novo Usuário">
+    </form>
+    <p id="msg"></p>
+    <br>
+    <a href="index.html" id="linkLogin">Voltar para Login</a>
+    <a href="listar_usuarios.html" id="linkLista" style="display: none;">Voltar para Lista</a>
+
+    <script src="auth.js"></script>
+    <script>
+        const formInclusao = document.getElementById('formInclusao');
+        const msg = document.getElementById('msg');
+        const linkLogin = document.getElementById('linkLogin');
+        const linkLista = document.getElementById('linkLista');
+        const selectFuncao = document.getElementById('funcao');
+        let ehPrimeiroCadastro = false;
+
+        // Verifica o status da instalação
+        window.onload = function() {
+            fetch('check_install.php')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.instalado) {
+                        // Se já está instalado, protege a página
+                        protegerPagina('gestor');
+                        linkLogin.style.display = 'none';
+                        linkLista.style.display = 'inline';
+                    } else {
+                        // Se não está instalado, é o primeiro cadastro
+                        ehPrimeiroCadastro = true;
+                        msg.textContent = "Cadastre o primeiro usuário (Gestor).";
+                        selectFuncao.value = 'gestor'; // Força a função Gestor
+                        linkLogin.style.display = 'inline';
+                        linkLista.style.display = 'none';
+                    }
+                });
+        };
+
+        formInclusao.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const formData = new FormData(form);
+            msg.textContent = 'Salvando...';
+
+            // Envia os dados do formulário para o PHP
+            fetch('incluir_usuario.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.sucesso) {
+                    msg.textContent = data.sucesso;
+                    msg.className = 'sucesso';
+                    form.reset();
+
+                    // Se foi o primeiro cadastro, redireciona para o login após 2 segundos
+                    if (data.sucesso_primeiro_cadastro) {
+                        msg.textContent = "Primeiro usuário (Gestor) criado! Redirecionando para o login...";
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 2000);
+                    }
+                } else {
+                    msg.textContent = data.erro || 'Erro desconhecido.';
+                    msg.className = 'erro';
+                }
+            })
+            .catch(error => {
+                msg.textContent = 'Erro de conexão com o servidor.';
+                msg.className = 'erro';
+            });
+        });
+    </script>
+</body>
+</html>

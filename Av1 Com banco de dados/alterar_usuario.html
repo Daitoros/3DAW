@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alterar Usuário</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Alterar Usuário</h1>
+    
+    <form id="formAlteracao" style="display: none;"> <input type="hidden" id="id" name="id">
+
+        Usuário: <input type="text" id="usuario" name="usuario" required>
+        <br><br>
+        Senha: <input type="password" id="senha" name="senha" required>
+        <br><br>
+        Função: 
+        <select id="funcao" name="funcao" required>
+            <option value="funcionario">Funcionário</option>
+            <option value="gestor">Gestor</option>
+        </select>
+        <br><br>
+        <input type="submit" value="Salvar Alterações">
+    </form>
+
+    <p id="msg"></p>
+    <a href='listar_usuarios.html'>Voltar para Lista de Usuários</a>
+
+    <script src="auth.js"></script>
+    <script>
+        protegerPagina('gestor');
+
+        const form = document.getElementById('formAlteracao');
+        const msg = document.getElementById('msg');
+        
+        // Pega o ID do usuário da URL (ex: alterar_usuario.html?id=1)
+        const urlParams = new URLSearchParams(window.location.search);
+        const usuarioId = urlParams.get('id');
+
+        // 1. CARREGAR OS DADOS DO USUÁRIO
+        window.onload = function() {
+            if (!usuarioId) {
+                msg.textContent = "ID de usuário não fornecido.";
+                msg.className = 'erro';
+                return;
+            }
+            
+            msg.textContent = "Carregando dados...";
+            
+            fetch('buscar_usuario.php?id=' + usuarioId)
+                .then(response => response.json())
+                .then(user => {
+                    if (user.erro) {
+                        msg.textContent = user.erro;
+                        msg.className = 'erro';
+                        return;
+                    }
+                    
+                    // Preenche o formulário com os dados
+                    document.getElementById('id').value = usuarioId;
+                    document.getElementById('usuario').value = user.usuario;
+                    document.getElementById('senha').value = user.senha;
+                    document.getElementById('funcao').value = user.funcao;
+                    
+                    form.style.display = 'block'; // Mostra o formulário
+                    msg.textContent = `Editando usuário #${usuarioId}`;
+                })
+                .catch(error => {
+                    msg.textContent = 'Erro de conexão ao buscar usuário.';
+                    msg.className = 'erro';
+                });
+        };
+
+        // 2. SALVAR AS ALTERAÇÕES
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(form);
+            msg.textContent = 'Salvando...';
+
+            fetch('salvar_usuario_alterado.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.sucesso) {
+                    msg.textContent = data.sucesso;
+                    msg.className = 'sucesso';
+                } else {
+                    msg.textContent = data.erro;
+                    msg.className = 'erro';
+                }
+            })
+            .catch(error => {
+                msg.textContent = 'Erro de conexão ao salvar.';
+                msg.className = 'erro';
+            });
+        });
+    </script>
+</body>
+</html>

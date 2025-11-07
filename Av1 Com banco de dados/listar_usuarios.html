@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listar Usuários</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Gerenciamento de Usuários</h1>
+        
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Usuário</th>
+                <th>Senha</th>
+                <th>Função</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="tabelaUsuarios">
+            </tbody>
+    </table>
+    <br>
+    <button><a href='incluir_usuario.html'> Incluir Novo Usuário</a></button>
+    <a href='gestor.html'>Voltar para Gerenciamento de Perguntas</a>
+
+    <script src="auth.js"></script>
+    <script>
+        protegerPagina('gestor');
+
+        const tabelaUsuarios = document.getElementById('tabelaUsuarios');
+
+        // Função para carregar os usuários na tabela via FETCH
+        function carregarTabela() {
+            tabelaUsuarios.innerHTML = '<tr><td colspan="5">Carregando...</td></tr>';
+            
+            fetch('listar_usuarios.php')
+                .then(response => response.json())
+                .then(usuarios => {
+                    tabelaUsuarios.innerHTML = ''; // Limpa a tabela
+
+                    if (usuarios.length === 0) {
+                        tabelaUsuarios.innerHTML = "<tr><td colspan='5'>Não há usuários cadastrados.</td></tr>";
+                        return;
+                    }
+
+                    usuarios.forEach((user, index) => {
+                        // O ID da Linha no PHP é o (index + 1)
+                        const id_linha = index + 1;
+
+                        const linha = `
+                            <tr>
+                                <td>${id_linha}</td>
+                                <td>${user.usuario}</td>
+                                <td>${user.senha}</td> <td>${user.funcao}</td>
+                                <td>
+                                    <a href="alterar_usuario.html?id=${id_linha}">Alterar</a> |
+                                    <a href="#" onclick="excluir(${id_linha}, '${user.usuario}')">Excluir</a>
+                                </td>
+                            </tr>
+                        `;
+                        tabelaUsuarios.innerHTML += linha;
+                    });
+                })
+                .catch(error => {
+                    tabelaUsuarios.innerHTML = `<tr><td colspan="5">Erro ao carregar usuários.</td></tr>`;
+                });
+        }
+
+        // Função para excluir via FETCH
+        function excluir(id_linha, nome_usuario) {
+            if (confirm(`Tem certeza que deseja excluir o usuário '${nome_usuario}' (ID #${id_linha})?`)) {
+                
+                fetch('excluir_usuario.php?id=' + id_linha)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.sucesso) {
+                            carregarTabela(); // Recarrega a tabela
+                        } else {
+                            alert('Erro ao excluir: ' + data.erro);
+                        }
+                    })
+                    .catch(error => {
+                        alert('Erro de conexão ao excluir.');
+                    });
+            }
+        }
+
+        // Carrega a tabela quando a página abre
+        window.onload = carregarTabela;
+    </script>
+</body>
+</html>

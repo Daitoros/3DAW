@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responder Pergunta</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1 id="tituloPergunta">Responder Pergunta</h1>
+    <h2 id="textoPergunta">Carregando...</h2>
+    
+    <form id="formResposta" style="display: none;"> <div id="opcoesResposta">
+            </div>
+        <br>
+        <input type="submit" value="Enviar Resposta">
+    </form>
+    
+    <p id="msg"></p>
+    <a href='funcionario.html'>Voltar</a>
+
+    <script src="auth.js"></script>
+    <script>
+        protegerPagina('funcionario');
+
+        // Pega o ID salvo pelo funcionario.html
+        const urlParams = new URLSearchParams(window.location.search);
+        const perguntaId = urlParams.get('id');
+        
+        const tituloPergunta = document.getElementById('tituloPergunta');
+        const textoPergunta = document.getElementById('textoPergunta');
+        const opcoesResposta = document.getElementById('opcoesResposta');
+        const formResposta = document.getElementById('formResposta');
+        const msg = document.getElementById('msg');
+        let respostaCerta = '';
+
+        // Carrega a pergunta via FETCH
+        window.onload = function() {
+            if (!perguntaId) {
+                textoPergunta.textContent = "Erro: Nenhuma pergunta selecionada.";
+                return;
+            }
+
+            // Usa o endpoint buscar_pergunta.php
+            fetch('buscar_pergunta.php?id=' + perguntaId)
+                .then(response => response.json())
+                .then(p => {
+                    if (p.erro) {
+                        textoPergunta.textContent = p.erro;
+                        return;
+                    }
+
+                    respostaCerta = p.respCerta; // Armazena a resposta certa
+                    tituloPergunta.textContent = `Responder Pergunta #${perguntaId}`;
+                    textoPergunta.textContent = p.pergunta;
+
+                    // Verifica se é múltipla escolha (se resp1 existe)
+                    if (p.resp1) {
+                        opcoesResposta.innerHTML = `
+                            <input type="radio" name="suaResp" value="${p.resp1}" required> 
+                            <label>Resposta 1: ${p.resp1}</label><br><br>
+                            <input type="radio" name="suaResp" value="${p.resp2}" required>
+                            <label>Resposta 2: ${p.resp2}</label><br><br>
+                            <input type="radio" name="suaResp" value="${p.resp3}" required>
+                            <label>Resposta 3: ${p.resp3}</label><br><br>
+                        `;
+                    } else {
+                        // É resposta de texto
+                        opcoesResposta.innerHTML = `
+                            Sua Resposta: <input type="text" name="suaResp" required>
+                        `;
+                    }
+                    
+                    formResposta.style.display = 'block'; // Mostra o formulário
+                })
+                .catch(error => {
+                    textoPergunta.textContent = "Erro de conexão ao buscar pergunta.";
+                });
+        };
+
+        // Verifica a resposta (esta lógica é client-side e não mudou)
+        formResposta.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const suaResp = formResposta.elements["suaResp"].value;
+
+            if (suaResp.trim() === respostaCerta.trim()) {
+                msg.textContent = "Resposta Correta!!!";
+                msg.className = 'sucesso';
+            } else {
+                msg.textContent = `Resposta Incorreta!!! A resposta certa é: ${respostaCerta}`;
+                msg.className = 'erro';
+            }
+            
+            // Desabilita o formulário após responder
+            formResposta.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
