@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alterar Aluno</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Alterar Aluno</h1>
+    
+    <form id="formAlteracao" style="display: none;">
+        <input type="hidden" id="id" name="id">
+
+        Nome: <input type="text" id="nome" name="nome" required>
+        <br><br>
+        Matrícula: <input type="text" id="matricula" name="matricula" required>
+        <br><br>
+        Email: <input type="email" id="email" name="email" required>
+        <br><br>
+        <input type="submit" value="Salvar Alterações">
+    </form>
+
+    <p id="msg"></p>
+    <a href='listar_alunos.html'>Voltar para Lista</a>
+
+    <script src="auth.js"></script>
+    <script>
+        protegerPagina('gestor');
+
+        const form = document.getElementById('formAlteracao');
+        const msg = document.getElementById('msg');
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const alunoId = urlParams.get('id');
+
+        // 1. Carregar os dados
+        window.onload = function() {
+            if (!alunoId) {
+                msg.textContent = "ID do aluno não fornecido.";
+                msg.className = 'erro';
+                return;
+            }
+            
+            msg.textContent = "Carregando dados...";
+            
+            fetch('buscar_aluno.php?id=' + alunoId)
+                .then(response => response.json())
+                .then(aluno => {
+                    if (aluno.erro) {
+                        msg.textContent = aluno.erro;
+                        msg.className = 'erro';
+                        return;
+                    }
+                    
+                    document.getElementById('id').value = alunoId;
+                    document.getElementById('nome').value = aluno.nome;
+                    document.getElementById('matricula').value = aluno.matricula;
+                    document.getElementById('email').value = aluno.email;
+                    
+                    form.style.display = 'block';
+                    msg.textContent = `Editando aluno #${alunoId}`;
+                })
+                .catch(error => {
+                    msg.textContent = 'Erro de conexão ao buscar aluno.';
+                    msg.className = 'erro';
+                });
+        };
+
+        // 2. Salvar as alterações
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(form);
+            msg.textContent = 'Salvando...';
+
+            fetch('alterar_aluno.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.sucesso) {
+                    msg.textContent = data.sucesso;
+                    msg.className = 'sucesso';
+                } else if (data.info) {
+                    msg.textContent = data.info;
+                    msg.className = 'info';
+                } else {
+                    msg.textContent = data.erro;
+                    msg.className = 'erro';
+                }
+            })
+            .catch(error => {
+                msg.textContent = 'Erro de conexão ao salvar.';
+                msg.className = 'erro';
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Alunos</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Gerenciamento de Alunos</h1>
+        
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Matrícula</th>
+                <th>Email</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="tabelaAlunos">
+            </tbody>
+    </table>
+    <br>
+    <button><a href='incluir_aluno.html'> Incluir Novo Aluno</a></button>
+    <a href='gestor.html'>Voltar ao Painel</a>
+
+    <script src="auth.js"></script>
+    <script>
+        protegerPagina('gestor'); // Protege a página
+
+        const tabelaAlunos = document.getElementById('tabelaAlunos');
+
+        // Função para carregar os alunos na tabela
+        function carregarTabela() {
+            tabelaAlunos.innerHTML = '<tr><td colspan="5">Carregando...</td></tr>';
+            
+            fetch('listar_alunos.php')
+                .then(response => response.json())
+                .then(alunos => {
+                    tabelaAlunos.innerHTML = ''; 
+                    if (alunos.length === 0) {
+                        tabelaAlunos.innerHTML = "<tr><td colspan='5'>Nenhum aluno cadastrado.</td></tr>";
+                        return;
+                    }
+                    alunos.forEach(aluno => {
+                        const linha = `
+                            <tr>
+                                <td>${aluno.id}</td>
+                                <td>${aluno.nome}</td>
+                                <td>${aluno.matricula}</td>
+                                <td>${aluno.email}</td>
+                                <td>
+                                    <a href="alterar_aluno.html?id=${aluno.id}">Alterar</a> |
+                                    <a href="#" onclick="excluir(${aluno.id}, '${aluno.nome}')">Excluir</a>
+                                </td>
+                            </tr>
+                        `;
+                        tabelaAlunos.innerHTML += linha;
+                    });
+                })
+                .catch(error => {
+                    tabelaAlunos.innerHTML = `<tr><td colspan="5">Erro ao carregar alunos.</td></tr>`;
+                });
+        }
+
+        // Função para excluir
+        function excluir(id, nome) {
+            if (confirm(`Tem certeza que deseja excluir o aluno '${nome}' (ID #${id})?`)) {
+                fetch('excluir_aluno.php?id=' + id)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.sucesso) {
+                            carregarTabela(); // Recarrega
+                        } else {
+                            alert('Erro ao excluir: ' + data.erro);
+                        }
+                    })
+                    .catch(error => {
+                        alert('Erro de conexão ao excluir.');
+                    });
+            }
+        }
+
+        window.onload = carregarTabela;
+    </script>
+</body>
+</html>
