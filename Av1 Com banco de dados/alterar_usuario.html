@@ -13,7 +13,8 @@
 
         Usuário: <input type="text" id="usuario" name="usuario" required>
         <br><br>
-        Senha: <input type="password" id="senha" name="senha" required>
+        Senha: <input type="password" id="senha" name="senha" 
+              placeholder="Deixe em branco para não alterar">
         <br><br>
         Função: 
         <select id="funcao" name="funcao" required>
@@ -60,7 +61,6 @@
                     // Preenche o formulário com os dados
                     document.getElementById('id').value = usuarioId;
                     document.getElementById('usuario').value = user.usuario;
-                    document.getElementById('senha').value = user.senha;
                     document.getElementById('funcao').value = user.funcao;
                     
                     form.style.display = 'block'; // Mostra o formulário

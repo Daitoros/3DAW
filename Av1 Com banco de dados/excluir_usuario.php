@@ -1,46 +1,54 @@
 <?php
 header('Content-Type: application/json');
 
-$resposta = [];
-// O ID do usuário é o número da linha no arquivo (ex: 1 é o primeiro usuário)
-$numUsuario = $_GET['id'] ?? null; 
+// 1. Incluir a conexão
+require_once 'db_conexao.php'; // $conn
 
-if ($numUsuario === null || !is_numeric($numUsuario) || $numUsuario < 1) {
+$resposta = [];
+// O ID agora é o ID do B.D. (chave primária)
+$id = $_GET['id'] ?? null;
+
+if ($id === null || !is_numeric($id) || $id < 1) {
     $resposta['erro'] = "ID de usuário inválido.";
     echo json_encode($resposta);
+    $conn->close();
     exit;
 }
 
-$linhas = [];
+// 2. --- NOVA LÓGICA (Banco de Dados com Prepared Statements) ---
+$sql = "DELETE FROM usuarios WHERE id = ?";
 
-if (!file_exists("usuarios.txt")) {
-    $resposta['erro'] = "Arquivo de usuários não encontrado.";
-    echo json_encode($resposta);
-    exit;
-}
+$stmt = $conn->prepare($sql);
 
-$arquivo = fopen("usuarios.txt", "r");
-while (($linha = fgets($arquivo)) !== false) {
-    $linhas[] = $linha;
-}
-fclose($arquivo);
-
-// O $numUsuario (ex: 1) corresponde ao índice [1] no array $linhas
-// (pois o índice [0] é o cabeçalho)
-if (isset($linhas[$numUsuario])) {
-    unset($linhas[$numUsuario]); // Remove a linha
-    
-    // Reescreve o arquivo
-    $arqDisc = fopen("usuarios.txt", "w");
-    foreach ($linhas as $linha_salvar) {
-        fwrite($arqDisc, $linha_salvar);
-    }
-    fclose($arqDisc);
-    
-    $resposta['sucesso'] = true;
+if ($stmt === false) {
+    $resposta['erro'] = "Erro ao preparar a consulta: " . $conn->error;
 } else {
-    $resposta['erro'] = "Usuário não encontrado no arquivo.";
+    // "i" = Inteiro
+    $stmt->bind_param("i", $id);
+
+    if ($stmt->execute()) {
+        // Verifica se alguma linha foi realmente apagada
+        if ($stmt->affected_rows > 0) {
+            $resposta['sucesso'] = true;
+        } else {
+            $resposta['erro'] = "Nenhum usuário encontrado com esse ID.";
+        }
+    } else {
+        $resposta['erro'] = "Erro ao excluir: " . $stmt->error;
+    }
+    
+    $stmt->close();
 }
 
+/*
+// --- LÓGICA ANTIGA (Arquivo .txt) ---
+// ... fopen/ler todas as linhas/unset/fopen/escrever todas as linhas ...
+// --- FIM LÓGICA ANTIGA ---
+*/
+
+// 3. Fechar a conexão
+$conn->close();
+
+// 4. Retornar o JSON
 echo json_encode($resposta);
 ?>

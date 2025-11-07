@@ -1,45 +1,45 @@
 <?php
 header('Content-Type: application/json');
 
-$id = $_GET['id'] ?? null;
+require_once 'db_conexao.php'; // $conn
+
 $resposta = [];
+$id = $_GET['id'] ?? null; 
 
 if ($id === null || !is_numeric($id) || $id < 1) {
-    $resposta['erro'] = "ID de usuário inválido.";
+    $resposta['erro'] = "ID de utilizador inválido.";
     echo json_encode($resposta);
+    $conn->close();
     exit;
 }
 
-if (!file_exists("usuarios.txt")) {
-    $resposta['erro'] = "Arquivo de usuários não encontrado.";
-    echo json_encode($resposta);
-    exit;
-}
+// *** ALTERAÇÃO DE SEGURANÇA ***
+// NUNCA envie a senha (nem o hash) de volta para um formulário de edição.
+$sql = "SELECT usuario, funcao FROM usuarios WHERE id = ?";
 
-$arquivo = fopen("usuarios.txt", "r");
-$i = 0; // Contador de linha (0 = cabeçalho, 1 = primeiro usuário)
-$usuario_encontrado = false;
+$stmt = $conn->prepare($sql);
 
-while (($linha = fgets($arquivo)) !== false) {
-    if ($i == $id) {
-        $dados = explode(";", trim($linha));
+if ($stmt === false) {
+    $resposta['erro'] = "Erro ao preparar a consulta: " . $conn->error;
+} else {
+    $stmt->bind_param("i", $id);
+
+    if ($stmt->execute()) {
+        $resultado = $stmt->get_result();
         
-        $resposta = [
-            'usuario' => $dados[0] ?? '',
-            'senha' => $dados[1] ?? '',
-            'funcao' => $dados[2] ?? ''
-        ];
-        $usuario_encontrado = true;
-        break;
+        if ($resultado->num_rows === 1) {
+            $resposta = $resultado->fetch_assoc();
+        } else {
+            $resposta['erro'] = "Utilizador com o ID " . htmlspecialchars($id) . " não encontrado.";
+        }
+    } else {
+        $resposta['erro'] = "Erro ao executar a consulta: " . $stmt->error;
     }
-    $i++;
-}
-fclose($arquivo);
-
-if (!$usuario_encontrado) {
-    $resposta['erro'] = "Usuário com o código " . htmlspecialchars($id) . " não encontrado.";
+    
+    $stmt->close();
 }
 
-// Retorna o JSON para o JavaScript
+$conn->close();
+
 echo json_encode($resposta);
 ?>

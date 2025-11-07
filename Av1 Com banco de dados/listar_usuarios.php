@@ -1,34 +1,40 @@
 <?php
 header('Content-Type: application/json');
 
+// 1. Incluir a conexão
+require_once 'db_conexao.php'; // $conn
+
 $usuarios = [];
 
-if (!file_exists("usuarios.txt")) {
-    echo json_encode($usuarios); // Retorna array vazio se o arquivo não existe
+// 2. --- NOVA LÓGICA (Banco de Dados) ---
+// Selecionamos o ID, utilizador, senha (para manter a consistência) e função
+// O 'id' é a chave primária do banco
+$sql = "SELECT id, usuario, senha, funcao FROM usuarios ORDER BY id ASC";
+
+$resultado = $conn->query($sql);
+
+if ($resultado === false) {
+    echo json_encode(['erro' => 'Erro na consulta SQL: ' . $conn->error]);
+    $conn->close();
     exit;
 }
 
-$arquivo = fopen("usuarios.txt", "r");
-if (!$arquivo) {
-    echo json_encode($usuarios); // Retorna array vazio em caso de falha
-    exit;
-}
-
-fgets($arquivo); // Descarta o cabeçalho
-
-while (($linha = fgets($arquivo)) !== false) {
-    $dados = explode(";", trim($linha));
-    
-    // Garante que a linha está formatada corretamente
-    if (count($dados) >= 3) {
-        $usuarios[] = [
-            'usuario' => $dados[0],
-            'senha' => $dados[1], // Nota: Em um app real, não envie a senha!
-            'funcao' => $dados[2]
-        ];
+// 3. Coletar os resultados
+if ($resultado->num_rows > 0) {
+    while ($linha = $resultado->fetch_assoc()) {
+        $usuarios[] = $linha;
     }
 }
-fclose($arquivo);
 
+/*
+// --- LÓGICA ANTIGA (Arquivo .txt) ---
+// ... fopen/fgets/loop ...
+// --- FIM LÓGICA ANTIGA ---
+*/
+
+// 4. Fechar a conexão
+$conn->close();
+
+// 5. Retornar o JSON
 echo json_encode($usuarios);
 ?>

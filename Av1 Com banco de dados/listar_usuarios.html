@@ -34,7 +34,7 @@
 
         // Função para carregar os usuários na tabela via FETCH
         function carregarTabela() {
-            tabelaUsuarios.innerHTML = '<tr><td colspan="5">Carregando...</td></tr>';
+            tabelaUsuarios.innerHTML = '<tr><td colspan="5">A carregar...</td></tr>';
             
             fetch('listar_usuarios.php')
                 .then(response => response.json())
@@ -42,22 +42,23 @@
                     tabelaUsuarios.innerHTML = ''; // Limpa a tabela
 
                     if (usuarios.length === 0) {
-                        tabelaUsuarios.innerHTML = "<tr><td colspan='5'>Não há usuários cadastrados.</td></tr>";
+                        tabelaUsuarios.innerHTML = "<tr><td colspan='5'>Não há utilizadores registados.</td></tr>";
                         return;
                     }
 
                     usuarios.forEach((user, index) => {
-                        // O ID da Linha no PHP é o (index + 1)
-                        const id_linha = index + 1;
+                        // *** MUDANÇA CRÍTICA ***
+                        // 'user' agora é o objeto do banco, ex: {id: 1, usuario: "..."}
+                        // Vamos usar 'user.id' que é a chave primária real.
+                        const id_db = user.id;
 
                         const linha = `
                             <tr>
-                                <td>${id_linha}</td>
-                                <td>${user.usuario}</td>
-                                <td>${user.senha}</td> <td>${user.funcao}</td>
+                                <td>${id_db}</td> <td>${user.usuario}</td>
+                                <td>********</td> <td>${user.funcao}</td>
                                 <td>
-                                    <a href="alterar_usuario.html?id=${id_linha}">Alterar</a> |
-                                    <a href="#" onclick="excluir(${id_linha}, '${user.usuario}')">Excluir</a>
+                                    <a href="alterar_usuario.html?id=${id_db}">Alterar</a> |
+                                    <a href="#" onclick="excluir(${id_db}, '${user.usuario}')">Excluir</a>
                                 </td>
                             </tr>
                         `;
@@ -65,15 +66,16 @@
                     });
                 })
                 .catch(error => {
-                    tabelaUsuarios.innerHTML = `<tr><td colspan="5">Erro ao carregar usuários.</td></tr>`;
+                    tabelaUsuarios.innerHTML = `<tr><td colspan="5">Erro ao carregar utilizadores.</td></tr>`;
                 });
         }
 
         // Função para excluir via FETCH
-        function excluir(id_linha, nome_usuario) {
-            if (confirm(`Tem certeza que deseja excluir o usuário '${nome_usuario}' (ID #${id_linha})?`)) {
+        function excluir(id_db, nome_usuario) { // O nome da variável mudou para id_db
+            if (confirm(`Tem a certeza que deseja excluir o utilizador '${nome_usuario}' (ID #${id_db})?`)) {
                 
-                fetch('excluir_usuario.php?id=' + id_linha)
+                // Envia o ID real do B.D. para o PHP
+                fetch('excluir_usuario.php?id=' + id_db)
                     .then(response => response.json())
                     .then(data => {
                         if (data.sucesso) {
