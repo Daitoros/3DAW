@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Usuários</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Gerenciamento de Usuários (Equipe)</h1>
+        <p>Lista de gestores, atendentes e profissionais com acesso ao sistema.</p>
+            
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Usuário (Login)</th>
+                    <th>Função</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="tabelaUsuarios">
+                </tbody>
+        </table>
+
+        <button><a href='incluir_usuario.html'> Novo Usuário</a></button>
+        <a href='gestor.html' class="back-link">Voltar ao Painel</a>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        // Protege a página
+        if (typeof protegerPagina === "function") {
+            protegerPagina('gestor');
+        }
+
+        const tabelaUsuarios = document.getElementById('tabelaUsuarios');
+
+        function carregarTabela() {
+            tabelaUsuarios.innerHTML = '<tr><td colspan="4">Carregando dados...</td></tr>';
+            
+            // O '?t=' evita que o navegador use dados velhos da memória
+            fetch('api/listar_usuarios.php?t=' + Date.now())
+                .then(response => {
+                    // Verifica se a resposta da rede foi OK (Status 200)
+                    if (!response.ok) {
+                        throw new Error("Erro na rede: " + response.status);
+                    }
+                    return response.json();
+                })
+                .then(usuarios => {
+                    console.log("Dados recebidos do PHP:", usuarios); // <--- OLHE O CONSOLE (F12)
+
+                    tabelaUsuarios.innerHTML = ''; // Limpa a mensagem de carregando
+
+                    if (!Array.isArray(usuarios) || usuarios.length === 0) {
+                        tabelaUsuarios.innerHTML = "<tr><td colspan='4'>Nenhum usuário encontrado.</td></tr>";
+                        return;
+                    }
+
+                    // Preenche a tabela
+                    usuarios.forEach(user => {
+                        // Tratamento de segurança para evitar erro se a função vier vazia
+                        let funcaoExibir = user.funcao ? user.funcao.toUpperCase() : 'SEM FUNÇÃO';
+
+                        const linha = `
+                            <tr>
+                                <td>${user.id}</td>
+                                <td>${user.usuario}</td>
+                                <td>
+                                    <span class="badge-funcao">${funcaoExibir}</span>
+                                </td>
+                                <td>
+                                    <a href="alterar_usuario.html?id=${user.id}">Alterar</a> |
+                                    <a href="#" onclick="excluir(${user.id}, '${user.usuario}')" style="color: #c14b4b;">Excluir</a>
+                                </td>
+                            </tr>
+                        `;
+                        tabelaUsuarios.innerHTML += linha;
+                    });
+                })
+                .catch(error => {
+                    console.error("Erro grave no JS:", error);
+                    tabelaUsuarios.innerHTML = `<tr><td colspan="4" style="color:red;">Erro ao carregar: ${error.message}</td></tr>`;
+                });
+        }
+
+        function excluir(id, nome) {
+            if (confirm(`Tem certeza que deseja excluir o usuário '${nome}'?`)) {
+                fetch('api/excluir_usuario.php?id=' + id)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.sucesso) {
+                            carregarTabela(); 
+                        } else {
+                            alert('Erro ao excluir: ' + (data.erro || 'Erro desconhecido'));
+                        }
+                    })
+                    .catch(error => alert('Erro de conexão ao tentar excluir.'));
+            }
+        }
+
+        // Garante que carrega ao abrir
+        window.addEventListener('load', carregarTabela);
+    </script>
+
+    <style>
+        .badge-funcao {
+            background-color: #e0f2f1;
+            color: #00796B;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+    </style>
+
+</body>
+</html>

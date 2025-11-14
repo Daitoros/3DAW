@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Novo Agendamento (Admin)</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Novo Agendamento (Balcão)</h1>
+        
+        <form id="formInclusao">
+            <label>Nome do Cliente:</label>
+            <input type="text" name="nome_cliente" required>
+
+            <label>Telefone:</label>
+            <input type="text" name="telefone_cliente" required>
+
+            <hr style="margin: 20px 0; border:0; border-top:1px solid #eee;">
+
+            <label>Serviço:</label>
+            <select id="selectServico" name="servico_desejado" required onchange="atualizarPreco()">
+                <option value="">Selecione...</option>
+            </select>
+
+            <div id="boxPreco" style="background:#e0f2f1; padding:10px; margin-bottom:15px; display:none; font-weight:bold; color:#00796B;">
+                Valor: <span id="displayPreco">R$ 0,00</span>
+                <input type="hidden" name="valor" id="inputValor">
+            </div>
+
+            <label>Profissional:</label>
+            <select id="selectProfissional" name="nome_profissional" required>
+                <option value="">Selecione...</option>
+            </select>
+            
+            <label>Data e Hora:</label>
+            <input type="datetime-local" name="data_hora_agendamento" required>
+
+            <label>Forma de Pagamento (Balcão):</label>
+            <select name="forma_pagamento">
+                <option value="Dinheiro">Dinheiro</option>
+                <option value="Cartão">Cartão (Máquina)</option>
+                <option value="Pix">Pix</option>
+            </select>
+            
+            <br><br>
+            <input type="submit" value="Confirmar Agendamento">
+        </form>
+
+        <p id="msg"></p>
+        <a href="#" onclick="history.back()" class="back-link">Voltar</a>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        // Protege para Gestor OU Atendente
+        // (Precisaríamos ajustar o auth.js para aceitar múltiplos, mas vamos simplificar deixando público internamente ou validando só login)
+        
+        const dbServicos = [
+            { nome: "Corte Feminino", preco: 80.00 },
+            { nome: "Corte Masculino", preco: 50.00 },
+            { nome: "Manicure", preco: 40.00 },
+            { nome: "Pedicure", preco: 45.00 },
+            { nome: "Hidratação Capilar", preco: 120.00 },
+            { nome: "Coloração Completa", preco: 200.00 }
+        ];
+        const dbProfissionais = ["Ana Silva", "Carlos Souza", "Mariana Oliveira"];
+
+        // Preencher selects ao carregar
+        window.onload = function() {
+            const selServ = document.getElementById('selectServico');
+            dbServicos.forEach(s => {
+                let opt = document.createElement('option');
+                opt.value = s.nome;
+                opt.dataset.preco = s.preco;
+                opt.text = s.nome;
+                selServ.appendChild(opt);
+            });
+
+            const selProf = document.getElementById('selectProfissional');
+            dbProfissionais.forEach(p => {
+                let opt = document.createElement('option');
+                opt.value = p;
+                opt.text = p;
+                selProf.appendChild(opt);
+            });
+        };
+
+        function atualizarPreco() {
+            const sel = document.getElementById('selectServico');
+            const opt = sel.options[sel.selectedIndex];
+            const box = document.getElementById('boxPreco');
+            
+            if (opt.dataset.preco) {
+                box.style.display = 'block';
+                const valor = parseFloat(opt.dataset.preco);
+                document.getElementById('displayPreco').textContent = valor.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+                document.getElementById('inputValor').value = valor;
+            } else {
+                box.style.display = 'none';
+            }
+        }
+
+        document.getElementById('formInclusao').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const msg = document.getElementById('msg');
+            msg.className = 'msg';
+            msg.textContent = 'Salvando...';
+
+            fetch('api/incluir_agendamento.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.sucesso) {
+                    msg.textContent = data.sucesso;
+                    msg.classList.add('sucesso');
+                    event.target.reset();
+                    document.getElementById('boxPreco').style.display = 'none';
+                    msg.textContent += " Redirecionando para a lista...";
+                    setTimeout(() => {
+                        window.location.href = 'listar_agendamentos.html';
+                    }, 1500); // Espera 1.5 segundos e vai para a lista
+                } else {
+                    msg.textContent = data.erro || 'Erro desconhecido.';
+                    msg.classList.add('erro');
+                }
+            })
+            .catch(error => {
+                msg.textContent = 'Erro de conexão.';
+                msg.classList.add('erro');
+            });
+        });
+    </script>
+</body>
+</html>

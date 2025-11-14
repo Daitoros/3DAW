@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login do Cliente - Salão</title>
+    <link rel="stylesheet" href="style.css"> 
+</head>
+<body>
+    <div class="container">
+        
+        <form id="loginForm">
+            <h1>Portal do Cliente</h1>
+            <p>Acesse para ver seus agendamentos.</p>
+            
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+            
+            <label for="senha">Senha:</label>
+            <input type="password" id="senha" name="senha" required>
+            
+            <input type="submit" value="Entrar">
+        </form>
+
+        <p id="msg"></p>
+
+        <p style="text-align: center; margin-top: 20px;">
+            Ainda não tem conta? <a href="cadastrar_cliente.html">Cadastre-se</a>
+        </p>
+         <p style="text-align: center; margin-top: 10px;">
+            <a href="agendar.html">Voltar ao site</a>
+        </p>
+        
+    </div> 
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const msg = document.getElementById('msg');
+            msg.className = 'msg';
+            msg.textContent = 'Verificando...';
+
+            fetch('api/login_cliente.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+               // ... (dentro do fetch) ...
+                if (data.logado) {
+                    msg.textContent = 'Bem-vindo(a), ' + data.nome_cliente + '!';
+                    msg.classList.add('sucesso');
+                    
+                    // REDIRECIONA PARA O PORTAL DO CLIENTE
+                    setTimeout(() => {
+                        window.location.href = 'portal_cliente.html';
+                    }, 1500);
+                } else {
+                    msg.textContent = data.mensagem;
+                    msg.classList.add('erro');
+                }
+            })
+            .catch(error => {
+                msg.textContent = 'Erro de conexão.';
+                msg.classList.add('erro');
+            });
+        });
+    </script>
+</body>
+</html>

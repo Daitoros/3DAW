@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Minha Agenda - Profissional</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Minha Agenda</h1>
+        <p>Olá, <strong id="nome-prof">...</strong>. Estes são seus próximos clientes.</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Horário</th>
+                    <th>Cliente</th>
+                    <th>Serviço</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="tabelaAgenda"></tbody>
+        </table>
+
+        <a href="index.html" class="back-link" style="color:red">Sair</a>
+    </div>
+
+    <script>
+        // Carrega a agenda específica do profissional logado
+        fetch('api/listar_minha_agenda_prof.php')
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById('tabelaAgenda');
+                tbody.innerHTML = '';
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4">Nenhum agendamento encontrado.</td></tr>';
+                    return;
+                }
+
+                // Pega o nome do próprio JS ou do primeiro registro para exibir no título
+                // (Simplificação)
+
+                data.forEach(ag => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${ag.data_formatada}</td>
+                            <td>${ag.nome_cliente} <br> <small>${ag.telefone_cliente}</small></td>
+                            <td>${ag.servico_desejado}</td>
+                            <td><span class="sucesso" style="padding:2px 8px; font-size:0.8rem">Confirmado</span></td>
+                        </tr>
+                    `;
+                });
+            });
+    </script>
+</body>
+</html>

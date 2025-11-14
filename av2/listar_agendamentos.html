@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Agendamentos</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Gerenciamento de Agendamentos</h1>
+            
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Serviço</th>
+                    <th>Profissional</th> <th>Data/Hora</th>
+                    <th>Valor</th>        <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="tabelaAgendamentos"></tbody>
+        </table>
+        <br>
+        <button><a href='incluir_agendamento.html'> Novo Agendamento</a></button>
+        
+        <a href="#" onclick="voltarPainel()" class="back-link">Voltar ao Painel</a> 
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        // Proteção básica (aceita gestor ou atendente)
+        const funcaoUsuario = sessionStorage.getItem('usuario_funcao');
+        if (!funcaoUsuario) window.location.href = 'index.html';
+
+        const tabelaAgendamentos = document.getElementById('tabelaAgendamentos');
+
+        function carregarTabela() {
+            tabelaAgendamentos.innerHTML = '<tr><td colspan="7">Carregando...</td></tr>';
+            
+            fetch('api/listar_agendamentos.php?t=' + Date.now())
+                .then(response => response.json())
+                .then(agendamentos => {
+                    tabelaAgendamentos.innerHTML = ''; 
+                    
+                    if (agendamentos.length === 0) {
+                        tabelaAgendamentos.innerHTML = "<tr><td colspan='7'>Nenhum agendamento cadastrado.</td></tr>";
+                        return;
+                    }
+
+                    agendamentos.forEach(ag => {
+                        // Formata o valor para R$
+                        let valorFormatado = parseFloat(ag.valor).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+
+                        const linha = `
+                            <tr>
+                                <td>${ag.id}</td>
+                                <td>${ag.nome_cliente}<br><small>${ag.telefone_cliente}</small></td>
+                                <td>${ag.servico_desejado}</td>
+                                <td>${ag.nome_profissional}</td> <td>${ag.data_hora_formatada}</td>
+                                <td>${valorFormatado}</td>       <td>
+                                    <a href="alterar_agendamento.html?id=${ag.id}">Alterar</a> |
+                                    <a href="#" onclick="excluir(${ag.id}, '${ag.nome_cliente}')" style="color: #c14b4b;">Excluir</a>
+                                </td>
+                            </tr>
+                        `;
+                        tabelaAgendamentos.innerHTML += linha;
+                    });
+                })
+                .catch(error => {
+                    tabelaAgendamentos.innerHTML = `<tr><td colspan="7">Erro ao carregar. Verifique o console.</td></tr>`;
+                    console.error(error);
+                });
+        }
+
+        function excluir(id, nome) {
+            if (confirm(`Tem certeza que deseja excluir o agendamento de '${nome}' (ID #${id})?`)) {
+                fetch('api/excluir_agendamento.php?id=' + id)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.sucesso) {
+                            carregarTabela();
+                        } else {
+                            alert('Erro ao excluir: ' + data.erro);
+                        }
+                    });
+            }
+        }
+
+        // Função para voltar para a tela certa
+        function voltarPainel() {
+            if (funcaoUsuario === 'atendente') {
+                window.location.href = 'atendente.html';
+            } else {
+                window.location.href = 'gestor.html';
+            }
+        }
+
+        window.addEventListener('pageshow', function(event) {
+            carregarTabela();
+        });
+    </script>
+</body>
+</html>

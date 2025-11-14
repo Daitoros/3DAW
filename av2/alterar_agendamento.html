@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Alterar Agendamento</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Alterar Agendamento</h1>
+        
+        <form id="formAlteracao" style="display: none;">
+            <input type="hidden" id="id" name="id">
+
+            <label>Nome do Cliente:</label>
+            <input type="text" id="nome_cliente" name="nome_cliente" required>
+            
+            <label>Telefone:</label>
+            <input type="text" id="telefone_cliente" name="telefone_cliente" required>
+            
+            <label>Serviço:</label>
+            <select id="servico_desejado" name="servico_desejado" required onchange="atualizarPreco()">
+                <option value="">Selecione...</option>
+            </select>
+
+            <label>Profissional:</label>
+            <select id="nome_profissional" name="nome_profissional" required>
+                <option value="">Selecione...</option>
+            </select>
+
+            <label>Valor (R$):</label>
+            <input type="number" id="valor" name="valor" step="0.01" required>
+
+            <label>Pagamento:</label>
+            <select id="forma_pagamento" name="forma_pagamento">
+                <option value="Dinheiro">Dinheiro</option>
+                <option value="Cartão">Cartão</option>
+                <option value="Pix">Pix</option>
+                <option value="Cartão de Crédito">Cartão de Crédito (Site)</option>
+            </select>
+            
+            <label>Data e Hora:</label>
+            <input type="datetime-local" id="data_hora_agendamento" name="data_hora_agendamento" required>
+            
+            <input type="submit" value="Salvar Alterações">
+        </form>
+
+        <p id="msg"></p>
+        <a href="#" onclick="voltarPainel()" class="back-link">Voltar para Lista</a>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        // Dados Simulados (Para preencher os selects)
+        const dbServicos = [
+            { nome: "Corte Feminino", preco: 80.00 },
+            { nome: "Corte Masculino", preco: 50.00 },
+            { nome: "Manicure", preco: 40.00 },
+            { nome: "Pedicure", preco: 45.00 },
+            { nome: "Hidratação Capilar", preco: 120.00 },
+            { nome: "Coloração Completa", preco: 200.00 }
+        ];
+        const dbProfissionais = ["Ana Silva", "Carlos Souza", "Mariana Oliveira"];
+
+        const form = document.getElementById('formAlteracao');
+        const msg = document.getElementById('msg');
+        const urlParams = new URLSearchParams(window.location.search);
+        const agendamentoId = urlParams.get('id');
+
+        // Função para preencher os selects
+        function popularSelects() {
+            const selServ = document.getElementById('servico_desejado');
+            dbServicos.forEach(s => {
+                let opt = document.createElement('option');
+                opt.value = s.nome;
+                opt.dataset.preco = s.preco;
+                opt.text = s.nome;
+                selServ.appendChild(opt);
+            });
+
+            const selProf = document.getElementById('nome_profissional');
+            dbProfissionais.forEach(p => {
+                let opt = document.createElement('option');
+                opt.value = p;
+                opt.text = p;
+                selProf.appendChild(opt);
+            });
+        }
+
+        // Atualiza o preço se mudar o serviço (Opcional na edição, mas útil)
+        function atualizarPreco() {
+            const sel = document.getElementById('servico_desejado');
+            const opt = sel.options[sel.selectedIndex];
+            if (opt.dataset.preco) {
+                document.getElementById('valor').value = opt.dataset.preco;
+            }
+        }
+
+        // 1. CARREGAR DADOS
+        window.onload = function() {
+            popularSelects(); // Primeiro cria as opções
+
+            if (!agendamentoId) {
+                msg.textContent = "ID não fornecido.";
+                return;
+            }
+            
+            msg.textContent = "Carregando dados...";
+            
+            fetch('api/buscar_agendamento.php?id=' + agendamentoId)
+                .then(response => response.json())
+                .then(ag => {
+                    if (ag.erro) {
+                        msg.textContent = ag.erro;
+                        msg.classList.add('erro');
+                    } else {
+                        document.getElementById('id').value = agendamentoId;
+                        document.getElementById('nome_cliente').value = ag.nome_cliente;
+                        document.getElementById('telefone_cliente').value = ag.telefone_cliente;
+                        document.getElementById('data_hora_agendamento').value = ag.data_hora_agendamento;
+                        document.getElementById('valor').value = ag.valor;
+                        
+                        // Seleciona as opções corretas nos Dropdowns
+                        document.getElementById('servico_desejado').value = ag.servico_desejado;
+                        document.getElementById('nome_profissional').value = ag.nome_profissional;
+                        document.getElementById('forma_pagamento').value = ag.forma_pagamento;
+                        
+                        form.style.display = 'block';
+                        msg.textContent = `Editando #${agendamentoId}`;
+                    }
+                });
+        };
+
+        // 2. SALVAR
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(form);
+            msg.textContent = 'Salvando...';
+            msg.className = 'msg';
+
+            fetch('api/alterar_agendamento.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.sucesso) {
+                    msg.textContent = data.sucesso;
+                    msg.classList.add('sucesso');
+                    // Redireciona para a lista após sucesso
+                    setTimeout(() => {
+                        window.location.href = 'listar_agendamentos.html';
+                    }, 1000);
+                } else {
+                    msg.textContent = data.erro || 'Erro desconhecido';
+                    msg.classList.add('erro');
+                }
+            });
+        });
+
+        // Voltar Inteligente
+        function voltarPainel() {
+            const funcao = sessionStorage.getItem('usuario_funcao');
+            if (funcao === 'atendente') {
+                window.location.href = 'listar_agendamentos.html'; // Ou atendente.html
+            } else {
+                window.location.href = 'listar_agendamentos.html';
+            }
+        }
+    </script>
+</body>
+</html>

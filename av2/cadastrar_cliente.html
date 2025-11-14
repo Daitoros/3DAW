@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Conta - Salão</title>
+    <link rel="stylesheet" href="style.css"> 
+</head>
+<body>
+    <div class="container">
+        
+        <form id="formCadastro">
+            <h1>Criar Conta</h1>
+            <p>Cadastre-se para gerenciar seus agendamentos.</p>
+            
+            <label>Nome Completo:</label>
+            <input type="text" name="nome" required>
+
+            <label>Email:</label>
+            <input type="email" name="email" required>
+
+            <label>Telefone:</label>
+            <input type="text" name="telefone" placeholder="(XX) 9XXXX-XXXX" required>
+            
+            <label>Senha:</label>
+            <input type="password" name="senha" required>
+            
+            <input type="submit" value="Cadastrar">
+        </form>
+
+        <p id="msg"></p>
+
+        <p style="text-align: center; margin-top: 20px;">
+            Já tem uma conta? <a href="login_cliente.html">Fazer Login</a>
+        </p>
+        
+    </div> 
+
+    <script>
+        document.getElementById('formCadastro').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const msg = document.getElementById('msg');
+            msg.className = 'msg';
+            msg.textContent = 'Salvando...';
+
+            fetch('api/cadastrar_cliente.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.sucesso) {
+                    msg.textContent = data.sucesso;
+                    msg.classList.add('sucesso');
+                    setTimeout(() => { window.location.href = 'login_cliente.html'; }, 2000);
+                } else {
+                    msg.textContent = data.erro;
+                    msg.classList.add('erro');
+                }
+            })
+            .catch(error => {
+                msg.textContent = 'Erro de conexão.';
+                msg.classList.add('erro');
+            });
+        });
+    </script>
+</body>
+</html>

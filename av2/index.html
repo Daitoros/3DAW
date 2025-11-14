@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Painel do Salão</title>
+    
+    <link rel="stylesheet" href="style.css"> 
+</head>
+<body>
+
+    <div class="container">
+        
+        <form id="loginForm">
+            <h1>Login do Gestor</h1>
+            <p>Acesse o painel para gerenciar os agendamentos.</p>
+            
+            <label for="usuario">Usuário:</label>
+            <input type="text" id="usuario" name="usuario" value="gestor" required>
+            
+            <label for="senha">Senha:</label>
+            <input type="password" id="senha" name="senha" value="1234" required>
+            
+            <input type="submit" value="Entrar">
+        </form>
+
+        <p style="text-align: center; margin-top: 20px;">
+            <a href="home.html">Ver site do cliente 
+                &rarr;
+            </a>
+        </p>
+        
+    </div> 
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            
+            fetch('api/login_interno.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.logado) {
+                    // --- CORREÇÃO AQUI: SALVAR A FUNÇÃO NA MEMÓRIA ---
+                    sessionStorage.setItem('usuario_funcao', data.funcao);
+                    // -------------------------------------------------
+
+                    // Redirecionamento
+                    if (data.funcao === 'gestor') {
+                        window.location.href = 'gestor.html';
+                    } else if (data.funcao === 'atendente') {
+                        window.location.href = 'atendente.html';
+                    } else if (data.funcao === 'profissional') {
+                        window.location.href = 'profissional.html';
+                    }
+                } else {
+                    alert(data.erro || 'Erro ao entrar');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

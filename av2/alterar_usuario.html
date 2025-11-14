@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alterar Usuário</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Alterar Usuário</h1>
+        
+        <p id="msg" style="padding: 10px; font-weight: bold;"></p>
+
+        <form id="formAlteracao" style="display: none;">
+            <input type="hidden" id="id" name="id">
+
+            <label>Nome de Usuário:</label>
+            <input type="text" id="usuario" name="usuario" required>
+            
+            <label>Nova Senha:</label>
+            <input type="password" id="senha" name="senha" placeholder="(Deixe em branco para não alterar)">
+            
+            <label>Função:</label>
+            <select id="funcao" name="funcao" style="width: 100%; padding: 12px; margin-bottom: 15px; border-radius:4px; border:1px solid #ccc;">
+                <option value="profissional">Profissional</option>
+                <option value="atendente">Atendente</option>
+                <option value="gestor">Gestor</option>
+            </select>
+            
+            <input type="submit" value="Salvar Alterações">
+        </form>
+
+        <a href='listar_usuarios.html' class="back-link">Voltar para Lista</a>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        // Proteção da página
+        if (typeof protegerPagina === "function") {
+            protegerPagina('gestor');
+        }
+
+        const form = document.getElementById('formAlteracao');
+        const msg = document.getElementById('msg');
+        
+        // Pega o ID da URL (ex: alterar_usuario.html?id=5)
+        const urlParams = new URLSearchParams(window.location.search);
+        const id = urlParams.get('id');
+
+        // 1. CARREGAR DADOS
+        window.onload = function() {
+            // Teste 1: Verifica se tem ID na URL
+            if (!id) {
+                msg.textContent = "Erro: Nenhum ID foi passado. Você deve clicar em 'Alterar' na lista de usuários.";
+                msg.className = 'erro';
+                return;
+            }
+
+            msg.textContent = "Carregando dados do servidor...";
+            msg.className = 'info';
+
+            // Teste 2: Tenta buscar no PHP
+            fetch('api/buscar_usuario.php?id=' + id)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Erro 404 ou 500: O arquivo PHP não foi encontrado ou quebrou.");
+                    }
+                    return response.json();
+                })
+                .then(user => {
+                    if (user.erro) {
+                        msg.textContent = "Erro do Banco: " + user.erro;
+                        msg.className = 'erro';
+                    } else {
+                        // SUCESSO! Preenche e mostra o formulário
+                        document.getElementById('id').value = id;
+                        document.getElementById('usuario').value = user.usuario;
+                        document.getElementById('funcao').value = user.funcao;
+                        
+                        form.style.display = 'block'; // <-- AQUI A MÁGICA ACONTECE
+                        msg.textContent = ""; // Limpa mensagem de carregando
+                        msg.className = "";
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    msg.textContent = "Falha na conexão: " + err.message;
+                    msg.className = 'erro';
+                });
+        };
+
+        // 2. SALVAR ALTERAÇÕES
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(form);
+            
+            msg.textContent = 'Salvando...';
+            msg.className = 'msg';
+
+            fetch('api/salvar_usuario_alterado.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.sucesso) {
+                    msg.textContent = data.sucesso;
+                    msg.className = 'sucesso';
+                    setTimeout(() => { window.location.href = 'listar_usuarios.html'; }, 1500);
+                } else {
+                    msg.textContent = data.erro || (data.info ? data.info : 'Erro desconhecido');
+                    msg.className = 'erro';
+                }
+            })
+            .catch(err => {
+                msg.textContent = "Erro ao salvar: " + err.message;
+                msg.className = 'erro';
+            });
+        });
+    </script>
+</body>
+</html>

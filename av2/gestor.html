@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Gestor</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Estilos do Dashboard */
+        .dashboard-menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 30px; }
+        .menu-card { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; transition: transform 0.2s; }
+        .menu-card:hover { transform: translateY(-5px); }
+        .menu-card h3 { color: #00796B; margin-bottom: 15px; }
+        .menu-card p { color: #666; margin-bottom: 20px; font-size: 0.9rem; }
+        .btn-link { background-color: #009688; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; font-weight: 600; display: inline-block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Painel do Gestor</h1>
+        <p>Administração Geral do Salão.</p>
+
+        <div class="dashboard-menu">
+            
+            <div class="menu-card">
+                <h3>Agenda Completa</h3>
+                <p>Visualizar todos os agendamentos.</p>
+                <a href="listar_agendamentos.html" class="btn-link">Ver Agenda</a>
+            </div>
+
+            <div class="menu-card">
+                <h3>Novo Agendamento</h3>
+                <p>Agendar cliente no balcão.</p>
+                <a href="incluir_agendamento.html" class="btn-link">Agendar</a>
+            </div>
+
+            <div class="menu-card">
+                <h3>Equipe & Acessos</h3>
+                <p>Gerenciar gestores, atendentes e profissionais.</p>
+                <a href="listar_usuarios.html" class="btn-link">Gerenciar Equipe</a>
+            </div>
+            
+        </div>
+        
+        <hr style="margin: 40px 0; border: 0; border-top: 1px solid #eee;">
+        
+        <a href="home.html" class="back-link" style="margin-right: 20px;">Ir para Site do Cliente</a>
+        <a href="index.html" class="back-link" style="color: #c14b4b;">Sair</a>
+    </div>
+    <script src="auth.js"></script>
+    <script>protegerPagina('gestor');</script>
+</body>
+</html>

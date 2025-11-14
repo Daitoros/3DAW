@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minha Área - Belle & Chic</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Estilos extras para o Carrinho e Checkout */
+        .portal-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 30px; margin-top: 30px; }
+        .passo-compra { display: none; } /* Esconde passos não ativos */
+        .passo-ativo { display: block; animation: fadeIn 0.5s; }
+        
+        .summary-box { background: #f8f9fa; padding: 15px; border-radius: 5px; border: 1px solid #ddd; margin-bottom: 15px; }
+        .price-tag { font-size: 1.5rem; color: #009688; font-weight: bold; text-align: right; }
+        
+        .payment-option { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 4px; cursor: pointer; }
+        .payment-option:hover { background-color: #f0f0f0; }
+        .payment-option input { width: auto; margin-right: 10px; }
+        
+        /* Input falso de cartão */
+        .credit-card-form { background: #eee; padding: 15px; border-radius: 5px; margin-top: 10px; display: none; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="container">
+            <a href="home.html" class="logo">Belle & Chic</a>
+            <nav>
+                <span>Olá, <strong id="nome-usuario">Cliente</strong></span>
+                <a href="#" onclick="logout()" style="color: #c14b4b; margin-left: 20px;">Sair</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="portal-grid">
+            
+            <div class="card-portal">
+                
+                <div id="passo-1" class="passo-compra passo-ativo">
+                    <h2>Novo Agendamento</h2>
+                    <p>Escolha o serviço e o profissional.</p>
+                    
+                    <form id="formSelecao">
+                        <label>Serviço:</label>
+                        <select id="selectServico" required onchange="atualizarPreco()">
+                            <option value="">Selecione...</option>
+                            </select>
+
+                        <div class="summary-box" id="boxPreco" style="display:none;">
+                            <p>Valor do Serviço:</p>
+                            <div class="price-tag" id="displayPreco">R$ 0,00</div>
+                        </div>
+                        
+                        <label>Profissional:</label>
+                        <select id="selectProfissional" required>
+                            <option value="">Selecione...</option>
+                            </select>
+                        
+                        <label>Data e Hora:</label>
+                        <input type="datetime-local" id="inputData" required>
+                        
+                        <button type="button" onclick="irParaCarrinho()" style="width:100%">Adicionar ao Carrinho &rarr;</button>
+                    </form>
+                </div>
+
+                <div id="passo-2" class="passo-compra">
+                    <h2>Carrinho & Pagamento</h2>
+                    <p>Confirme os dados e escolha a forma de pagamento.</p>
+                    
+                    <div class="summary-box">
+                        <p><strong>Serviço:</strong> <span id="resumoServico"></span></p>
+                        <p><strong>Profissional:</strong> <span id="resumoProfissional"></span></p>
+                        <p><strong>Data:</strong> <span id="resumoData"></span></p>
+                        <hr style="margin: 10px 0; border:0; border-top:1px solid #ccc;">
+                        <p><strong>Total a Pagar:</strong> <span id="resumoPreco" style="color:#009688; font-weight:bold;"></span></p>
+                    </div>
+
+                    <form id="formPagamento">
+                        <label>Forma de Pagamento:</label>
+                        
+                        <div class="payment-option" onclick="selecionarPagamento('pix')">
+                            <input type="radio" name="pgto" value="Pix" id="radioPix" required> Pix (Instantâneo)
+                        </div>
+                        
+                        <div class="payment-option" onclick="selecionarPagamento('cartao')">
+                            <input type="radio" name="pgto" value="Cartão de Crédito" id="radioCartao" required> Cartão de Crédito
+                        </div>
+
+                        <div id="areaCartao" class="credit-card-form">
+                            <input type="text" placeholder="Número do Cartão" maxlength="16">
+                            <input type="text" placeholder="Nome no Cartão">
+                            <div style="display:flex; gap:10px;">
+                                <input type="text" placeholder="MM/AA" maxlength="5">
+                                <input type="text" placeholder="CVV" maxlength="3">
+                            </div>
+                        </div>
+
+                        <br>
+                        <div style="display:flex; gap: 10px;">
+                            <button type="button" onclick="voltarPasso1()" style="background:#ccc; color:#333;">&larr; Voltar</button>
+                            <input type="submit" value="Finalizar Compra" style="flex:1;">
+                        </div>
+                    </form>
+                    <p id="msg"></p>
+                </div>
+
+            </div>
+
+            <div class="card-portal">
+                <h2>Histórico</h2>
+                <div style="max-height: 500px; overflow-y: auto;">
+                    <table style="font-size: 0.9rem;">
+                        <thead>
+                            <tr>
+                                <th>Serviço</th>
+                                <th>Data</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaMeusAgendamentos"></tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // === DADOS SIMULADOS (HARDCODED) ===
+        const dbServicos = [
+            { nome: "Corte Feminino", preco: 80.00 },
+            { nome: "Corte Masculino", preco: 50.00 },
+            { nome: "Manicure", preco: 40.00 },
+            { nome: "Pedicure", preco: 45.00 },
+            { nome: "Hidratação Capilar", preco: 120.00 },
+            { nome: "Coloração Completa", preco: 200.00 }
+        ];
+
+        const dbProfissionais = [
+            "Ana Silva (Especialista em Cortes)", 
+            "Carlos Souza (Colorista)", 
+            "Mariana Oliveira (Manicure/Pedicure)"
+        ];
+
+        let carrinho = {}; // Guarda os dados temporariamente
+
+        // === INICIALIZAÇÃO ===
+        window.onload = function() {
+            verificarLogin();
+            popularFormularios();
+        };
+
+        function verificarLogin() {
+            fetch('api/check_session.php')
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.logado) window.location.href = 'login_cliente.html';
+                    else {
+                        document.getElementById('nome-usuario').textContent = data.nome;
+                        carregarAgendamentos();
+                    }
+                });
+        }
+
+        function popularFormularios() {
+            // Preenche Select de Serviços
+            const selServ = document.getElementById('selectServico');
+            dbServicos.forEach(s => {
+                let opt = document.createElement('option');
+                opt.value = s.nome; // O value é o nome
+                opt.dataset.preco = s.preco; // Guardamos o preço num atributo data
+                opt.text = s.nome;
+                selServ.appendChild(opt);
+            });
+
+            // Preenche Select de Profissionais
+            const selProf = document.getElementById('selectProfissional');
+            dbProfissionais.forEach(p => {
+                let opt = document.createElement('option');
+                opt.value = p;
+                opt.text = p;
+                selProf.appendChild(opt);
+            });
+        }
+
+        // === LÓGICA DO FRONTEND ===
+
+        function atualizarPreco() {
+            const sel = document.getElementById('selectServico');
+            const opt = sel.options[sel.selectedIndex];
+            const box = document.getElementById('boxPreco');
+            
+            if (opt.dataset.preco) {
+                box.style.display = 'block';
+                document.getElementById('displayPreco').textContent = 
+                    parseFloat(opt.dataset.preco).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+            } else {
+                box.style.display = 'none';
+            }
+        }
+
+        function irParaCarrinho() {
+            const servico = document.getElementById('selectServico').value;
+            const profissional = document.getElementById('selectProfissional').value;
+            const data = document.getElementById('inputData').value;
+            
+            // Pega o preço do dataset
+            const selServ = document.getElementById('selectServico');
+            const preco = selServ.options[selServ.selectedIndex].dataset.preco;
+
+            if(!servico || !profissional || !data) {
+                alert("Por favor, preencha todos os campos.");
+                return;
+            }
+
+            // Salva no objeto carrinho
+            carrinho = {
+                servico: servico,
+                profissional: profissional,
+                data: data,
+                valor: preco
+            };
+
+            // Atualiza o visual do Carrinho
+            document.getElementById('resumoServico').textContent = carrinho.servico;
+            document.getElementById('resumoProfissional').textContent = carrinho.profissional;
+            document.getElementById('resumoData').textContent = new Date(carrinho.data).toLocaleString('pt-BR');
+            document.getElementById('resumoPreco').textContent = 
+                parseFloat(carrinho.valor).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+
+            // Troca de tela
+            document.getElementById('passo-1').classList.remove('passo-ativo');
+            document.getElementById('passo-2').classList.add('passo-ativo');
+        }
+
+        function voltarPasso1() {
+            document.getElementById('passo-2').classList.remove('passo-ativo');
+            document.getElementById('passo-1').classList.add('passo-ativo');
+        }
+
+        function selecionarPagamento(tipo) {
+            document.getElementById('radio' + (tipo === 'pix' ? 'Pix' : 'Cartao')).checked = true;
+            if(tipo === 'cartao') {
+                document.getElementById('areaCartao').style.display = 'block';
+            } else {
+                document.getElementById('areaCartao').style.display = 'none';
+            }
+        }
+
+        // === ENVIO FINAL ===
+        document.getElementById('formPagamento').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formaPgto = document.querySelector('input[name="pgto"]:checked').value;
+            const msg = document.getElementById('msg');
+            msg.textContent = "Processando pagamento...";
+            msg.className = 'msg';
+
+            // Prepara dados para o PHP
+            const formData = new FormData();
+            formData.append('servico_desejado', carrinho.servico);
+            formData.append('nome_profissional', carrinho.profissional);
+            formData.append('data_hora_agendamento', carrinho.data);
+            formData.append('valor', carrinho.valor);
+            formData.append('forma_pagamento', formaPgto);
+
+            fetch('api/incluir_agendamento.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.sucesso) {
+                    msg.textContent = "Pagamento Aprovado! Agendamento Confirmado.";
+                    msg.classList.add('sucesso');
+                    form.reset();
+                    carregarAgendamentos(); // Atualiza lista
+                    
+                    // Reseta tudo após 2 seg
+                    setTimeout(() => {
+                        msg.textContent = "";
+                        msg.className = 'msg';
+                        document.getElementById('formSelecao').reset();
+                        document.getElementById('formPagamento').reset();
+                        document.getElementById('areaCartao').style.display = 'none';
+                        document.getElementById('boxPreco').style.display = 'none';
+                        voltarPasso1();
+                    }, 3000);
+                } else {
+                    msg.textContent = data.erro;
+                    msg.classList.add('erro');
+                }
+            });
+        });
+
+        // === LISTAGEM ===
+        function carregarAgendamentos() {
+            const tbody = document.getElementById('tabelaMeusAgendamentos');
+            fetch('api/listar_meus_agendamentos.php')
+                .then(res => res.json())
+                .then(data => {
+                    tbody.innerHTML = '';
+                    if(data.length === 0) { tbody.innerHTML = '<tr><td colspan="3">Nada agendado.</td></tr>'; return; }
+                    data.forEach(ag => {
+                        // Se você quiser exibir o valor na tabela, precisa pedir ao PHP para retornar a coluna 'valor'
+                        // Por enquanto, vamos exibir 'R$ --' se o PHP não estiver retornando
+                        let val = ag.valor ? parseFloat(ag.valor).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'}) : '-';
+                        
+                        tbody.innerHTML += `
+                            <tr>
+                                <td>${ag.servico_desejado}</td>
+                                <td>${ag.data_hora_formatada}</td>
+                                <td>${val}</td>
+                            </tr>`;
+                    });
+                });
+        }
+
+        function logout() {
+            fetch('api/logout_cliente.php').then(() => window.location.href = 'home.html');
+        }
+    </script>
+</body>
+</html>

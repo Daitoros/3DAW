@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novo Usuário</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Novo Usuário do Sistema</h1>
+        <p>Cadastre membros da equipe.</p>
+        
+        <form id="formInclusao">
+            <label>Nome de Usuário (Login):</label>
+            <input type="text" name="usuario" placeholder="Ex: joao.silva" required>
+            
+            <label>Senha:</label>
+            <input type="password" name="senha" required>
+            
+            <label>Função:</label>
+            <select name="funcao" style="width: 100%; padding: 12px; margin-bottom: 15px; border-radius:4px; border:1px solid #ccc;">
+                <option value="funcionario">Funcionário (Genérico)</option>
+                <option value="profissional">Profissional (Cabeleireiro/Manicure)</option>
+                <option value="atendente">Atendente (Recepção)</option>
+                <option value="gestor">Gestor (Admin)</option>
+            </select>
+            
+            <input type="submit" value="Criar Usuário">
+        </form>
+
+        <p id="msg"></p>
+        <a href='listar_usuarios.html' class="back-link">Voltar para Lista</a>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        // Tenta proteger a página
+        if (typeof protegerPagina === "function") {
+            protegerPagina('gestor');
+        }
+
+        document.getElementById('formInclusao').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const msg = document.getElementById('msg');
+            msg.className = 'msg';
+            msg.textContent = 'Salvando...';
+
+            // CAMINHO CORRETO: api/incluir_usuario.php
+            fetch('api/incluir_usuario.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Resposta do servidor:", data); // OLHE O CONSOLE (F12)
+
+                if (data.sucesso) {
+                    msg.textContent = data.sucesso;
+                    msg.classList.add('sucesso');
+                    event.target.reset(); // Limpa o formulário
+                    
+                    // Redireciona de volta para a lista após 1.5s
+                    setTimeout(() => {
+                        window.location.href = 'listar_usuarios.html';
+                    }, 1500);
+                } else {
+                    msg.textContent = data.erro || 'Erro desconhecido';
+                    msg.classList.add('erro');
+                }
+            })
+            .catch(error => {
+                console.error("Erro de conexão:", error);
+                msg.textContent = 'Erro de conexão. Verifique se o arquivo PHP existe na pasta api/.';
+                msg.classList.add('erro');
+            });
+        });
+    </script>
+</body>
+</html>
