@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Perguntas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Gerenciamento de Perguntas</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Pergunta</th>
+                <th>Resposta 1</th>
+                <th>Resposta 2</th>
+                <th>Resposta 3</th>
+                <th>Resposta Correta</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="tabelaPerguntas">
+            </tbody>
+    </table>
+    <br>
+    
+    <button><a href='incluir_pergunta.html'> Incluir nova pergunta</a></button>
+    <button><a href='alterar_pergunta_ajax.html'> Alterar pergunta (AJAX)</a></button>
+    <hr> <button><a href='listar_usuarios.html'> Gerenciar Usuários</a></button>
+    <button><a href='listar_alunos.html'> Gerenciar Alunos</a></button>
+    <hr> <button onclick="logoff()">Sair / Logoff</button>
+
+    <script src="auth.js"></script>
+    <script>
+        // Protege a página
+        protegerPagina('gestor');
+
+        const tabelaPerguntas = document.getElementById('tabelaPerguntas');
+
+        // Função para carregar as perguntas na tabela via FETCH
+        function carregarTabela() {
+            tabelaPerguntas.innerHTML = '<tr><td colspan="7">Carregando...</td></tr>';
+            
+            fetch('listar_perguntas.php')
+                .then(response => response.json())
+                .then(perguntas => {
+                    tabelaPerguntas.innerHTML = ''; 
+
+                    if (perguntas.length === 0) {
+                        tabelaPerguntas.innerHTML = "<tr><td colspan='7'>Não há perguntas cadastradas.</td></tr>";
+                        return;
+                    }
+
+                    perguntas.forEach(p => {
+                        const id_db = p.id; 
+
+                        const linha = `
+                            <tr>
+                                <td>${id_db}</td>
+                                <td>${p.pergunta}</td>
+                                <td>${p.resp1 || 'N/A'}</td>
+                                <td>${p.resp2 || 'N/A'}</td>
+                                <td>${p.resp3 || 'N/A'}</td>
+                                <td>${p.respCerta}</td>
+                                <td>
+                                    <a href="alterar_pergunta_ajax.html?id=${id_db}">Alterar</a> |
+                                    <a href="#" onclick="excluir(${id_db})">Excluir</a>
+                                </td>
+                            </tr>
+                        `;
+                        tabelaPerguntas.innerHTML += linha;
+                    });
+                })
+                .catch(error => {
+                    tabelaPerguntas.innerHTML = `<tr><td colspan="7">Erro ao carregar perguntas: ${error}</td></tr>`;
+                });
+        }
+
+        // Função para excluir via FETCH
+        function excluir(id_db) {
+            if (confirm(`Tem certeza que deseja excluir a pergunta #${id_db}?`)) {
+                
+                fetch('excluir_pergunta.php?id=' + id_db)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.sucesso) {
+                            carregarTabela(); // Recarrega a tabela
+                        } else {
+                            alert('Erro ao excluir: ' + data.erro);
+                        }
+                    })
+                    .catch(error => {
+                        alert('Erro de conexão ao excluir.');
+                    });
+            }
+        }
+
+        // Carrega a tabela quando a página abre
+        window.onload = carregarTabela;
+    </script>
+</body>
+</html>

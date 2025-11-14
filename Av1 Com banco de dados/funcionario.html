@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Perguntas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Perguntas Disponíveis</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Pergunta</th>
+                <th>Tipo</th>
+                <th>Ação</th>
+            </tr>
+        </thead>
+        <tbody id="tabelaPerguntas">
+            </tbody>
+    </table>
+    <br>    
+    <button onclick="logoff()">Sair / Logoff</button>
+
+    <script src="auth.js"></script>
+    <script>
+        protegerPagina('funcionario');
+
+        const tabelaPerguntas = document.getElementById('tabelaPerguntas');
+
+        // Carrega a tabela via FETCH
+        window.onload = function() {
+            tabelaPerguntas.innerHTML = '<tr><td colspan="4">Carregando...</td></tr>';
+
+            fetch('listar_perguntas.php')
+                .then(response => response.json())
+                .then(perguntas => {
+                    tabelaPerguntas.innerHTML = ''; 
+                    if (perguntas.length === 0) {
+                        tabelaPerguntas.innerHTML = "<tr><td colspan='4'>Não há perguntas disponíveis.</td></tr>";
+                        return;
+                    }
+
+                    perguntas.forEach(p => {
+                        const id_db = p.id;
+                        // Determina o tipo (Múltipla Escolha ou Texto)
+                        const tipo = p.resp1 ? "Múltipla Escolha" : "Texto";
+
+                        const linha = `
+                            <tr>
+                                <td>${id_db}</td>
+                                <td>${p.pergunta}</td>
+                                <td>${tipo}</td>
+                                <td>
+                                    <a href="responder.html?id=${id_db}">Responder</a>
+                                </td>
+                            </tr>
+                        `;
+                        tabelaPerguntas.innerHTML += linha;
+                    });
+                })
+                .catch(error => {
+                     tabelaPerguntas.innerHTML = `<tr><td colspan="4">Erro ao carregar perguntas.</td></tr>`;
+                });
+        };
+    </script>
+</body>
+</html>

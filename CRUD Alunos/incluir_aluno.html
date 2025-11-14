@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incluir Aluno</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Incluir Novo Aluno</h1>
+    
+    <form id="formInclusao">
+        Nome: <input type="text" id="nome" name="nome" required>
+        <br><br>
+        Matrícula: <input type="text" id="matricula" name="matricula" required>
+        <br><br>
+        Email: <input type="email" id="email" name="email" required>
+        <br><br>
+        <input type="submit" value="Incluir Aluno">
+    </form>
+
+    <p id="msg"></p>
+    <a href='listar_alunos.html'>Voltar para Lista</a>
+
+    <script src="auth.js"></script>
+    <script>
+        protegerPagina('gestor');
+
+        document.getElementById('formInclusao').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const form = event.target;
+            const formData = new FormData(form);
+            const msg = document.getElementById('msg');
+            msg.textContent = 'Salvando...';
+
+            fetch('incluir_aluno.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.sucesso) {
+                    msg.textContent = data.sucesso;
+                    msg.className = 'sucesso';
+                    form.reset();
+                } else {
+                    msg.textContent = data.erro || 'Erro desconhecido.';
+                    msg.className = 'erro';
+                }
+            })
+            .catch(error => {
+                msg.textContent = 'Erro de conexão.';
+                msg.className = 'erro';
+            });
+        });
+    </script>
+</body>
+</html>
