@@ -2,14 +2,14 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel da Recepção</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style_admin.css">
     <style>
+        /* O mesmo estilo do gestor para manter consistência */
         .dashboard-menu { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 30px; }
-        .menu-card { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; transition: transform 0.2s; }
+        .menu-card { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; border: 1px solid #eee; transition: transform 0.2s; }
         .menu-card:hover { transform: translateY(-5px); }
-        .menu-card h3 { color: #00796B; margin-bottom: 15px; }
+        .menu-card h3 { color: #00796B; margin-bottom: 15px; font-size: 1.2rem; }
         .menu-card p { color: #666; margin-bottom: 20px; font-size: 0.9rem; }
         .btn-link { background-color: #009688; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; font-weight: 600; display: inline-block; }
     </style>
@@ -36,9 +36,9 @@
         </div>
         
         <hr style="margin: 40px 0; border: 0; border-top: 1px solid #eee;">
-        
-        <a href="home.html" class="back-link" style="margin-right: 20px;">Ir para Site do Cliente</a>
         <a href="index.html" class="back-link" style="color: #c14b4b;">Sair</a>
     </div>
+    
+    <script src="auth.js"></script> 
 </body>
 </html>
