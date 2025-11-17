@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 17/11/2025 às 08:27
+-- Tempo de geração: 17/11/2025 às 09:44
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.2.12
 
@@ -60,7 +60,8 @@ INSERT INTO `agendamentos` (`id`, `nome_cliente`, `telefone_cliente`, `servico_d
 (14, 'Davi Aires Bastos Medeiros', '21965386105', 'Corte Feminino', 'Ana Silva (Especialista em Cortes)', 80.00, 'Cartão de Crédito', '2025-11-29 22:10:00', 2, '2025-11-14 01:10:53'),
 (15, 'Davi Aires Bastos Medeiros', '21965386105', 'dfd', 'opuo', 0.00, 'Balcão', '2025-11-12 22:58:00', 2, '2025-11-14 01:58:52'),
 (16, 'Davi Aires Bastos Medeiros', '21965386105', 'dfd', 'opuo', 0.00, 'Balcão', '2025-11-28 04:02:00', 2, '2025-11-17 07:02:35'),
-(17, 'Davi Aires Bastos Medeiros', '21965386105', 'Corte Feminino', 'Ana Silva', 80.00, 'Cartão', '2025-10-31 04:09:00', 2, '2025-11-17 07:09:58');
+(17, 'Davi Aires Bastos Medeiros', '21965386105', 'Corte Feminino', 'Ana Silva', 80.00, 'Cartão', '2025-10-31 04:09:00', 2, '2025-11-17 07:09:58'),
+(18, 'Davi Aires Bastos Medeiros', '21965386105', 'Corte & Styling', 'Ana Silva', 80.00, 'Pix', '2025-10-31 06:44:00', 2, '2025-11-17 07:44:57');
 
 -- --------------------------------------------------------
 
@@ -137,8 +138,7 @@ INSERT INTO `usuarios` (`id`, `usuario`, `senha`, `funcao`, `data_criacao`) VALU
 (1, 'admin', '$2y$10$L5sIH26uJeMTyj9rwTxpuuLN2.fg8zOETBFTjmO/S/9reGBGIEh9y', 'gestor', '2025-11-13 21:52:16'),
 (5, 'recepcao', '$2y$10$vGruQPEkdCvdakVCTLF58eRKwk1GQrgGO2ON3naCGnfE/VQ9MvxZC', 'atendente', '2025-11-13 22:43:53'),
 (6, 'Ana Silva', '$2y$10$vGruQPEkdCvdakVCTLF58eRKwk1GQrgGO2ON3naCGnfE/VQ9MvxZC', 'profissional', '2025-11-13 22:43:53'),
-(7, 'Carlos Souza', '$2y$10$vGruQPEkdCvdakVCTLF58eRKwk1GQrgGO2ON3naCGnfE/VQ9MvxZC', 'profissional', '2025-11-13 22:43:53'),
-(9, 'Izumi', '$2y$10$l96NvolRp1KIbo.kMOHzBuLcpUfTjwYstYgzPfaA6LXou333yXjQq', 'profissional', '2025-11-14 00:55:29');
+(7, 'Carlos Souza', '$2y$10$vGruQPEkdCvdakVCTLF58eRKwk1GQrgGO2ON3naCGnfE/VQ9MvxZC', 'profissional', '2025-11-13 22:43:53');
 
 --
 -- Índices para tabelas despejadas
@@ -187,7 +187,7 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de tabela `agendamentos`
 --
 ALTER TABLE `agendamentos`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT de tabela `alunos`
